@@ -1,5 +1,17 @@
 // 디렉토리: context/AuthContext.js
 
+/*
+*
+* [문제 원인]
+* 'Unable to resolve module expo-secure-store' 오류는 해당 라이브러리가 설치되지 않아 발생한 문제입니다.
+* 코드 로직에는 문제가 없으므로, 아래 명령어를 터미널에 입력하여 라이브러리를 설치해주세요.
+*
+* [해결 방법]
+* npx expo install expo-secure-store
+* 또는
+* npm install expo-secure-store
+*/
+
 import { createContext, useState, useEffect, useContext } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
@@ -37,7 +49,7 @@ export const AuthProvider = ({ children }) => {
 
     loadStorageData();
   }, []);
-  
+
   const login = async (username, password, role) => {
     try {
       const { data } = await axios.post(`${API_URL}/login`, { username, password, role });

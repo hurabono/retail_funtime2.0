@@ -43,7 +43,8 @@
             "./assets/fonts/Figtree-Light.ttf"
           ]
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true
