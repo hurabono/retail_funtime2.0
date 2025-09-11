@@ -18,9 +18,15 @@ const InitialLayout = () => {
     const inAppGroup = segments[0] === '(root)';
 
     if (user && !inAppGroup) {
-      // 1. 로그인 상태인데, 메인 앱 영역에 있지 않다면 (예: 로그인 화면에 머물러 있다면)
-      //    -> 홈 화면으로 강제 이동합니다.
-      router.replace('/(root)/(tabs)');
+      // --- [수정 시작] ---
+      // 1. 로그인 상태이고, 메인 앱 영역에 있지 않다면
+      //    -> user.role에 따라 다른 홈 화면으로 강제 이동합니다.
+      if (user.role === 'manager') {
+        router.replace('/(root)/(managerTabs)'); // 매니저용 탭으로 이동
+      } else {
+        router.replace('/(root)/(tabs)'); // 직원용 탭으로 이동
+      }
+      // --- [수정 끝] ---
     } else if (!user && inAppGroup) {
       // 2. 로그아웃 상태인데, 메인 앱 영역에 접근하려고 한다면
       //    -> 로그인 화면으로 강제 이동합니다.
