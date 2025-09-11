@@ -1,10 +1,11 @@
 // 디렉토리: app/signUp.tsx
 
 import React, { useState } from 'react';
+// [수정] StyleSheet import 추가
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../context/AuthContext';
-import { Picker } from '@react-native-picker/picker'; // [추가] Picker 라이브러리
+import { Picker } from '@react-native-picker/picker';
 
 const canadianProvinces = [
     "Alberta", "British Columbia", "Manitoba", "New Brunswick",
@@ -17,7 +18,7 @@ const SignUp = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [role, setRole] = useState('employee');
-  const [province, setProvince] = useState(canadianProvinces[0]); // [추가] 주(Province) 상태
+  const [province, setProvince] = useState(canadianProvinces[0]);
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
   const router = useRouter();
@@ -43,7 +44,6 @@ const SignUp = () => {
     <View style={styles.container}>
       <Text style={styles.title}>Sign Up</Text>
 
-      {/* 역할 선택 UI */}
       <View style={styles.roleSelector}>
          <TouchableOpacity
           style={[styles.roleButton, role === 'employee' && styles.roleButtonActive]}
@@ -59,11 +59,11 @@ const SignUp = () => {
         </TouchableOpacity>
       </View>
       
-      {/* [추가] 주 선택 Picker */}
       <View style={styles.pickerContainer}>
         <Picker
             selectedValue={province}
-            onValueChange={(itemValue) => setProvince(itemValue)}>
+            // [수정] itemValue에 string 타입 명시
+            onValueChange={(itemValue: string) => setProvince(itemValue)}>
             {canadianProvinces.map(p => <Picker.Item key={p} label={p} value={p} />)}
         </Picker>
       </View>
@@ -100,7 +100,7 @@ const SignUp = () => {
   );
 };
 
-// [수정] 스타일 전체
+// [추가] styles 객체 생성
 const styles = StyleSheet.create({
   container: {
     flex: 1,
