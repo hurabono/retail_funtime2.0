@@ -9,22 +9,27 @@ import { useAuth } from '../context/AuthContext'; // useAuth 훅 가져오기
 
 const SignIn = () => {
   const [checked, setChecked] = useState(false);
-  const [email, setEmail] = useState('');
+  // [수정] email 상태를 username으로 변경하여 백엔드와 일관성 유지
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { login } = useAuth(); // AuthContext의 login 함수 사용
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please enter both email and password.');
+    // [수정] email을 username으로 변경
+    if (!username || !password) {
+      // [수정] 알림 메시지에서 'email'을 'username'으로 변경
+      Alert.alert('Error', 'Please enter both username and password.');
       return;
     }
     setIsSubmitting(true);
     try {
-      await login(email, password);
+      // [수정] login 함수에 username 전달
+      await login(username, password);
       // 로그인 성공 시 AuthContext의 useEffect가 자동으로 홈 화면으로 이동시킵니다.
     } catch (error) {
-      Alert.alert('Login Failed', 'Invalid email or password.');
+      // [수정] 알림 메시지에서 'email'을 'username'으로 변경
+      Alert.alert('Login Failed', 'Invalid username or password.');
       console.error(error);
     } finally {
       setIsSubmitting(false);
@@ -45,8 +50,9 @@ const SignIn = () => {
               className="w-[300px] border-b border-gray-400 text-white p-2 mt-1"
               placeholder="Enter your Email"
               placeholderTextColor="#A0AEC0"
-              value={email}
-              onChangeText={setEmail}
+              // [수정] value와 onChangeText를 username 상태와 연결
+              value={username}
+              onChangeText={setUsername}
               keyboardType="email-address"
               autoCapitalize="none"
             />
