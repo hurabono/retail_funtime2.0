@@ -1,106 +1,161 @@
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Image, Alert } from 'react-native';
+import { View, Text, ScrollView, TextInput, TouchableOpacity, Alert, Modal, FlatList, ListRenderItem } from 'react-native';
 import { Link, router } from "expo-router";
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Checkbox } from 'react-native-paper';
-import images from '@constants/images';
-import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import axios from 'axios';
+
+const canadianProvinces: string[] = [
+  'Alberta', 'British Columbia', 'Manitoba', 'New Brunswick',
+  'Newfoundland and Labrador', 'Nova Scotia', 'Ontario',
+  'Prince Edward Island', 'Quebec', 'Saskatchewan',
+  'Northwest Territories', 'Nunavut', 'Yukon'
+];
 
 const SignUp = () => {
-  const [checked, setChecked] = useState(false);
-  // ✅ [CORRECTED] Changed state from 'name' and 'email' to 'username'
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const { register } = useAuth();
+  const [form, setForm] = useState({
+    username: '',
+    password: '',
+    confirmPassword: '',
+    employeeNumber: '',
+    province: '',
+    role: 'employee'
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isProvinceModalVisible, setProvinceModalVisible] = useState(false);
 
-  const handleRegister = async () => {
-    if (!username || !password || !confirmPassword) {
+  const handleSignUp = async () => {
+    // [수정] 이제 employeeNumber는 항상 필수입니다.
+    if (!form.username || !form.password || !form.confirmPassword || !form.province || !form.employeeNumber) {
       Alert.alert('Error', 'Please fill in all fields.');
       return;
     }
-    if (password !== confirmPassword) {
+    if (!/^\d{6}$/.test(form.employeeNumber)) {
+        Alert.alert('Error', 'Please enter a valid 6-digit employee number.');
+        return;
+    }
+    if (form.password !== form.confirmPassword) {
       Alert.alert('Error', 'Passwords do not match.');
       return;
     }
-  
+
     setIsSubmitting(true);
     try {
-      // ✅ [CORRECTED] Changed endpoint and payload to match backend
-      await api.post('/auth/register', { 
-        username, 
-        password, 
-        role: 'employee' // Defaulting role to 'employee'
-      });
-
-      Alert.alert('Success', 'Registration successful! Please log in.');
+      await register(form.username, form.password, form.role, form.province, form.employeeNumber);
+      Alert.alert('Success', 'Registration successful! You can now log in.');
       router.replace('/signIn');
-    } catch (error) {
-      const errorMessage ='An unexpected error occurred.';
+    } catch (error: unknown) {
+      let errorMessage = 'An unexpected error occurred.';
+      if (axios.isAxiosError(error) && error.response) {
+        errorMessage = error.response.data.msg || 'Registration failed.';
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
       Alert.alert('Registration Failed', errorMessage);
-      console.error("Register Failed:", error);
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const renderProvinceItem: ListRenderItem<string> = ({ item }) => (
+    <TouchableOpacity
+      style={{ padding: 15, borderBottomWidth: 1, borderBottomColor: '#E2E8F0' }}
+      onPress={() => {
+        setForm({ ...form, province: item });
+        setProvinceModalVisible(false);
+      }}
+    >
+      <Text style={{ textAlign: 'center', fontSize: 18 }}>{item}</Text>
+    </TouchableOpacity>
+  );
+
   return (
     <LinearGradient colors={['#112D4E', '#8199B6']} style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <Image source={images.checkIcon} style={{ width: 60, height: 60, marginBottom: 20 }} resizeMode="contain" />
-          <Text className="text-white text-3xl font-bold mb-2">Sign up</Text>
-          <Text className="text-gray-300 text-lg mb-6">GET STARTED</Text>
+        <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 20 }}>
+          <Text className="text-white text-3xl font-bold text-center mb-6">Create Account</Text>
           
-          {/* ✅ [CORRECTED] Changed inputs to a single 'Username' field */}
-          <View className="w-[80%] mt-4">
-            <Text className="text-white mb-1">Username</Text>
+          <View className="flex-row mb-6">
+            <TouchableOpacity 
+              className={`border-2 p-3 w-[140px] rounded-l-2xl ${form.role === 'employee' ? 'bg-white/30 border-white' : 'border-gray-400'}`}
+              onPress={() => setForm({...form, role: 'employee'})}
+            >
+              <Text className="text-white text-center font-bold">Employee</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              className={`border-2 p-3 w-[140px] rounded-r-2xl ${form.role === 'manager' ? 'bg-white/30 border-white' : 'border-gray-400'}`}
+              onPress={() => setForm({...form, role: 'manager'})}
+            >
+              <Text className="text-white text-center font-bold">Manager</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View className="mb-4">
+            <Text className="text-white">Username (Email)</Text>
             <TextInput
-              className="w-full border-b border-gray-400 text-white p-2"
-              placeholder="Enter your username"
+              className="w-[300px] border-b border-gray-400 text-white p-2 mt-1"
+              placeholder="Enter your Email as Username"
               placeholderTextColor="#A0AEC0"
-              value={username}
-              onChangeText={setUsername}
+              value={form.username}
+              onChangeText={(text) => setForm({...form, username: text})}
+              keyboardType="email-address"
               autoCapitalize="none"
             />
           </View>
-
-          <View className="w-[80%] mt-6">
-            <Text className="text-white mb-1">Password</Text>
+          
+          {/* [수정] Employee Number가 항상 보이도록 변경 */}
+          <View className="mb-4">
+            <Text className="text-white">Employee Number</Text>
             <TextInput
-              className="w-full border-b border-gray-400 text-white p-2"
+              className="w-[300px] border-b border-gray-400 text-white p-2 mt-1"
+              placeholder="Enter 6-digit employee number"
+              placeholderTextColor="#A0AEC0"
+              value={form.employeeNumber}
+              onChangeText={(text) => setForm({...form, employeeNumber: text})}
+              keyboardType="number-pad"
+              maxLength={6}
+            />
+          </View>
+
+          <View className="mb-4">
+            <Text className="text-white">Password</Text>
+            <TextInput
+              className="w-[300px] border-b border-gray-400 text-white p-2 mt-1"
               placeholder="Enter your password"
               placeholderTextColor="#A0AEC0"
               secureTextEntry
-              value={password}
-              onChangeText={setPassword}
+              value={form.password}
+              onChangeText={(text) => setForm({...form, password: text})}
             />
           </View>
 
-          <View className="w-[80%] mt-6">
-            <Text className="text-white mb-1">Confirm Password</Text>
+          <View className="mb-4">
+            <Text className="text-white">Confirm Password</Text>
             <TextInput
-              className="w-full border-b border-gray-400 text-white p-2"
+              className="w-[300px] border-b border-gray-400 text-white p-2 mt-1"
               placeholder="Confirm your password"
               placeholderTextColor="#A0AEC0"
               secureTextEntry
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
+              value={form.confirmPassword}
+              onChangeText={(text) => setForm({...form, confirmPassword: text})}
             />
           </View>
-
-          <View className="w-[80%] flex-row items-center mt-4">
-            <Checkbox
-              status={checked ? 'checked' : 'unchecked'}
-              onPress={() => setChecked(!checked)}
-              color="white"
-            />
-            <Text className="text-gray-300 text-xs mr-2">I agree with privacy policy </Text>
-            <Link href="/" className="text-blue-400 underline text-xs">Terms and Condition</Link>
+          
+          <View className="mb-6">
+            <Text className="text-white">Province</Text>
+            <TouchableOpacity 
+              onPress={() => setProvinceModalVisible(true)} 
+              className="w-[300px] border-b border-gray-400 p-2 mt-1 h-[40px] justify-center"
+            >
+              <Text className={form.province ? "text-white" : "text-gray-400"}>
+                {form.province || 'Select your province'}
+              </Text>
+            </TouchableOpacity>
           </View>
 
-          <TouchableOpacity activeOpacity={0.8} className="mt-6" onPress={handleRegister} disabled={isSubmitting}>
+          <TouchableOpacity activeOpacity={0.8} className="mt-4" onPress={handleSignUp} disabled={isSubmitting}>
             <LinearGradient
               colors={['#8199B6', '#112D4E']}
               start={{ x: 0, y: 0 }}
@@ -114,13 +169,36 @@ const SignUp = () => {
           </TouchableOpacity>
 
           <View className="flex-row justify-center mt-6">
-            <Text className="text-gray-300">You already have an account? </Text>
-            <Link href="/signIn" className="text-blue-400 underline">Log in</Link>
+            <Text className="text-gray-300">Already have an account? </Text>
+            <TouchableOpacity>
+              <Link href="./signIn" className="text-blue-400 underline">Log in</Link>
+            </TouchableOpacity>
           </View>
         </ScrollView>
       </SafeAreaView>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isProvinceModalVisible}
+        onRequestClose={() => setProvinceModalVisible(false)}
+      >
+        <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <View style={{ backgroundColor: 'white', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 10, height: '50%' }}>
+            <TouchableOpacity onPress={() => setProvinceModalVisible(false)} style={{alignSelf: 'flex-end', padding: 10}}>
+              <Text style={{fontSize: 18, color: '#112D4E'}}>Close</Text>
+            </TouchableOpacity>
+            <FlatList
+              data={canadianProvinces}
+              renderItem={renderProvinceItem}
+              keyExtractor={(item) => item}
+            />
+          </View>
+        </View>
+      </Modal>
     </LinearGradient>
   );
 };
 
 export default SignUp;
+

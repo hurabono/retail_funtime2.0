@@ -1,5 +1,4 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
-// [수정] Platform과 AsyncStorage를 import 합니다.
+import { createContext, useState, useEffect, useContext } from 'react';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
@@ -7,10 +6,9 @@ import axios from 'axios';
 
 const AuthContext = createContext();
 
-// [수정] 컴퓨터 IP 주소로 변경하여 모바일에서도 접속 가능하게 합니다.
+// [수정] YOUR_COMPUTER_IP를 실제 컴퓨터 IP 주소로 변경하세요.
 const API_URL = 'http://localhost:4000/api/auth';
 
-// [추가] 플랫폼에 따라 적절한 저장소를 선택하는 헬퍼 객체
 const storage = {
   setItem: async (key, value) => {
     if (Platform.OS === 'web') {
@@ -43,14 +41,12 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const loadStorageData = async () => {
       try {
-        // [수정] storage 헬퍼 사용
         const storedToken = await storage.getItem('token');
         if (storedToken) {
           axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
           setToken(storedToken);
-          // [수정] storage 헬퍼 사용
           const storedUser = await storage.getItem('user');
-          if (storedUser) setUser(JSON.parse(storedUser));
+          if(storedUser) setUser(JSON.parse(storedUser));
         }
       } catch (e) {
         console.log(e);
@@ -68,7 +64,6 @@ export const AuthProvider = ({ children }) => {
       setUser(data.user);
       setToken(data.token);
       axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
-      // [수정] storage 헬퍼 사용
       await storage.setItem('token', data.token);
       await storage.setItem('user', JSON.stringify(data.user));
       return data;
@@ -82,14 +77,14 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     setToken(null);
     delete axios.defaults.headers.common['Authorization'];
-    // [수정] storage 헬퍼 사용
     await storage.deleteItem('token');
     await storage.deleteItem('user');
   };
 
-  const register = async (username, password, role, province) => {
+  // [수정] register 함수에 employeeNumber 파라미터를 추가하고, 요청 본문에 포함시킵니다.
+  const register = async (username, password, role, province, employeeNumber) => {
     try {
-      const { data } = await axios.post(`${API_URL}/register`, { username, password, role, province });
+      const { data } = await axios.post(`${API_URL}/register`, { username, password, role, province, employeeNumber });
       return data;
     } catch (e) {
       console.log(e.response ? e.response.data : e.message);
