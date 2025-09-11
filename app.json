@@ -1,0 +1,52 @@
+{
+  "expo": {
+    "name": "retail_fun_time",
+    "slug": "retail_fun_time",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/management.png",
+    "scheme": "myapp",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/management.png",
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-gradient.png",
+          "resizeMode": "cover",
+          "backgroundColor": "#112D4E"
+        }
+      ],
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/Figtree-Regular.ttf",
+            "./assets/fonts/Figtree-Bold.ttf",
+            "./assets/fonts/Figtree-ExtraBold.ttf",
+            "./assets/fonts/Figtree-Medium.ttf",
+            "./assets/fonts/Figtree-Light.ttf"
+          ]
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
