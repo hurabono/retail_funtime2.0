@@ -1,53 +1,73 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
+// 디렉토리: app/signUp.tsx
 
-// [삭제] 잘못된 import 경로 제거
-// import { registerUser } from '../services/authService';
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useAuth } from '../context/AuthContext';
+import { Picker } from '@react-native-picker/picker'; // [추가] Picker 라이브러리
+
+const canadianProvinces = [
+    "Alberta", "British Columbia", "Manitoba", "New Brunswick",
+    "Newfoundland and Labrador", "Nova Scotia", "Ontario", "Prince Edward Island",
+    "Quebec", "Saskatchewan"
+];
 
 const SignUp = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [role, setRole] = useState('employee');
+  const [province, setProvince] = useState(canadianProvinces[0]); // [추가] 주(Province) 상태
+  const [loading, setLoading] = useState(false);
+  const { register } = useAuth();
   const router = useRouter();
 
-  // [수정] API 호출 로직으로 변경
   const handleSignUp = async () => {
     if (password !== confirmPassword) {
       Alert.alert("Sign Up Failed", "Passwords do not match.");
       return;
     }
-
+    setLoading(true);
     try {
-      // ⚠️ 중요: YOUR_BACKEND_API_URL을 실제 백엔드 주소로 변경해야 합니다.
-      const response = await fetch('http://YOUR_BACKEND_API_URL/api/auth/register/manager', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        // 회원가입 성공
-        Alert.alert('Sign Up Success', 'Your account has been created.');
-        // 성공 후 로그인 페이지로 이동
-        router.push('/signIn');
-      } else {
-        // 회원가입 실패
-        Alert.alert('Sign Up Failed', data.msg || 'An error occurred.');
-      }
+      await register(username, password, role, province);
+      Alert.alert('Sign Up Success', 'Account created successfully!');
+      router.replace('/signIn');
     } catch (error) {
-      console.error(error);
-      Alert.alert('Sign Up Error', 'Could not connect to the server.');
+      Alert.alert('Sign Up Failed', 'Username may already exist.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Sign Up</Text>
+
+      {/* 역할 선택 UI */}
+      <View style={styles.roleSelector}>
+         <TouchableOpacity
+          style={[styles.roleButton, role === 'employee' && styles.roleButtonActive]}
+          onPress={() => setRole('employee')}
+        >
+          <Text style={[styles.roleText, role === 'employee' && styles.roleTextActive]}>Employee</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.roleButton, role === 'manager' && styles.roleButtonActive]}
+          onPress={() => setRole('manager')}
+        >
+          <Text style={[styles.roleText, role === 'manager' && styles.roleTextActive]}>Manager</Text>
+        </TouchableOpacity>
+      </View>
+      
+      {/* [추가] 주 선택 Picker */}
+      <View style={styles.pickerContainer}>
+        <Picker
+            selectedValue={province}
+            onValueChange={(itemValue) => setProvince(itemValue)}>
+            {canadianProvinces.map(p => <Picker.Item key={p} label={p} value={p} />)}
+        </Picker>
+      </View>
+
       <TextInput
         style={styles.input}
         placeholder="Username"
@@ -69,18 +89,24 @@ const SignUp = () => {
         value={confirmPassword}
         onChangeText={setConfirmPassword}
       />
-      <TouchableOpacity style={styles.button} onPress={handleSignUp}>
-        <Text style={styles.buttonText}>Sign Up</Text>
+      <TouchableOpacity style={styles.button} onPress={handleSignUp} disabled={loading}>
+        {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Sign Up</Text>}
+      </TouchableOpacity>
+      
+       <TouchableOpacity onPress={() => router.push('/signIn')} style={{ marginTop: 20 }}>
+        <Text style={{ textAlign: 'center', color: '#007BFF' }}>Already have an account? Sign In</Text>
       </TouchableOpacity>
     </View>
   );
 };
 
+// [수정] 스타일 전체
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
     padding: 16,
+    backgroundColor: '#fff'
   },
   title: {
     fontSize: 24,
@@ -106,6 +132,33 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
+  roleSelector: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  roleButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderWidth: 1,
+    borderColor: '#007BFF',
+    borderRadius: 5,
+  },
+  roleButtonActive: {
+    backgroundColor: '#007BFF',
+  },
+  roleText: {
+    color: '#007BFF',
+  },
+  roleTextActive: {
+    color: '#fff',
+  },
+  pickerContainer: {
+      borderColor: 'gray',
+      borderWidth: 1,
+      borderRadius: 5,
+      marginBottom: 12
+  }
 });
 
 export default SignUp;

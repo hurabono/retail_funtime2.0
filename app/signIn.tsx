@@ -1,55 +1,55 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
+// 디렉토리: app/signIn.tsx
 
-// [삭제] 잘못된 import 경로 제거
-// import { loginUser } from '../services/authService';
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useAuth } from '../context/AuthContext'; // [수정] useAuth hook 사용
 
 const SignIn = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState('employee'); // [수정] 역할 상태 추가
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
   const router = useRouter();
 
-  // [수정] API 호출 로직 추가
   const handleSignIn = async () => {
-    // 'employee' 또는 'manager'를 선택하는 UI가 필요하지만, 우선 'employee'로 고정
-    const role = 'employee';
-
+    setLoading(true);
     try {
-      // 백엔드 서버의 주소를 입력해야 합니다.
-      // 예: http://<your-backend-ip-address>:5000/api/auth/login
-      const response = await fetch('http://YOUR_BACKEND_API_URL/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password, role }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        // 로그인 성공 시 토큰 저장 및 메인 화면으로 이동
-        // 예: AsyncStorage.setItem('token', data.token);
-        Alert.alert('Login Success', `Welcome ${username}`);
-        router.push('/'); // 메인 화면으로 이동
-      } else {
-        Alert.alert('Login Failed', data.msg || 'Invalid credentials');
-      }
+      await login(username, password, role);
+      // 성공 시 _layout에서 자동으로 라우팅 처리
     } catch (error) {
-      console.error(error);
-      Alert.alert('Login Error', 'An error occurred. Please try again.');
+      Alert.alert('Login Failed', 'Invalid credentials or server error.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Sign In</Text>
+      {/* [추가] 역할 선택 UI */}
+      <View style={styles.roleSelector}>
+        <TouchableOpacity
+          style={[styles.roleButton, role === 'employee' && styles.roleButtonActive]}
+          onPress={() => setRole('employee')}
+        >
+          <Text style={[styles.roleText, role === 'employee' && styles.roleTextActive]}>Employee</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.roleButton, role === 'manager' && styles.roleButtonActive]}
+          onPress={() => setRole('manager')}
+        >
+          <Text style={[styles.roleText, role === 'manager' && styles.roleTextActive]}>Manager</Text>
+        </TouchableOpacity>
+      </View>
+
       <TextInput
         style={styles.input}
         placeholder="Username"
         value={username}
         onChangeText={setUsername}
+        autoCapitalize="none"
       />
       <TextInput
         style={styles.input}
@@ -58,8 +58,13 @@ const SignIn = () => {
         value={password}
         onChangeText={setPassword}
       />
-      <TouchableOpacity style={styles.button} onPress={handleSignIn}>
-        <Text style={styles.buttonText}>Sign In</Text>
+      <TouchableOpacity style={styles.button} onPress={handleSignIn} disabled={loading}>
+        {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Sign In</Text>}
+      </TouchableOpacity>
+      
+      {/* [추가] 회원가입 페이지로 이동하는 버튼 */}
+      <TouchableOpacity onPress={() => router.push('/signUp')} style={{ marginTop: 20 }}>
+        <Text style={{ textAlign: 'center', color: '#007BFF' }}>Don't have an account? Sign Up</Text>
       </TouchableOpacity>
     </View>
   );
@@ -70,6 +75,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 16,
+    backgroundColor: '#fff'
   },
   title: {
     fontSize: 24,
@@ -81,6 +87,7 @@ const styles = StyleSheet.create({
     height: 40,
     borderColor: 'gray',
     borderWidth: 1,
+    borderRadius: 5,
     marginBottom: 12,
     paddingHorizontal: 8,
   },
@@ -94,6 +101,28 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
+  // [추가] 스타일
+  roleSelector: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  roleButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderWidth: 1,
+    borderColor: '#007BFF',
+    borderRadius: 5,
+  },
+  roleButtonActive: {
+    backgroundColor: '#007BFF',
+  },
+  roleText: {
+    color: '#007BFF',
+  },
+  roleTextActive: {
+    color: '#fff',
+  }
 });
 
 export default SignIn;

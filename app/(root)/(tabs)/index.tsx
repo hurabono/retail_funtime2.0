@@ -10,6 +10,23 @@ const index = () => {
     <LinearGradient colors={["#112D4E", "#8199B6"]} className="flex-1">
       <SafeAreaView style={{ flex: 1 }} className="flex-1 mt-10">
         <ScrollView contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 20, paddingBottom:100 }}>
+          <View style={styles.container}>
+            {/* [추가] 헤더 부분 */}
+            <View style={styles.header}>
+              <View>
+                  <Text style={styles.welcomeText}>Welcome, {user?.username || 'User'}!</Text>
+                  <Text style={styles.storeText}>Store: {user?.storeNumber || 'Not Assigned'}</Text>
+              </View>
+              <TouchableOpacity onPress={logout} style={styles.logoutButton}>
+                <Text style={styles.logoutButtonText}>Logout</Text>
+              </TouchableOpacity>
+            </View>
+            
+            <View style={styles.mainContent}>
+              <Text style={styles.title}>Clock In / Out</Text>
+              {/* 출퇴근 버튼 등 기존의 메인 컨텐츠가 여기에 위치합니다. */}
+            </View>
+          </View>
           {/* Announcement Bar */}
           <View className="bg-white rounded-full px-4 py-2 mt-3 flex-row justify-center items-center">
           <Image source={images.approval} style={{ width: 30 }} resizeMode="contain" />

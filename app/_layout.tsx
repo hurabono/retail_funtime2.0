@@ -1,24 +1,44 @@
-import { SplashScreen, Stack } from "expo-router";
-import { useFonts } from "expo-font";
-import "./global.css";
-import { useEffect } from "react";
+// 디렉토리: app/_layout.tsx
 
-export default function RootLayout() {
-  const [fontsLoaded] = useFonts({
-    "Figtree-Regular": require("../assets/fonts/Figtree-Regular.ttf"),
-    "Figtree-Bold": require("../assets/fonts/Figtree-Bold.ttf"),
-    "Figtree-ExtraBold": require("../assets/fonts/Figtree-ExtraBold.ttf"),
-    "Figtree-Medium": require("../assets/fonts/Figtree-Medium.ttf"),
-    "Figtree-Light": require("../assets/fonts/Figtree-Light.ttf"),
-  });
+import React, { useEffect } from 'react';
+import { Stack, useRouter, useSegments } from 'expo-router';
+import { AuthProvider, useAuth } from '../context/AuthContext'; // [추가] AuthContext import
+
+const InitialLayout = () => {
+  const { user, initialized } = useAuth();
+  const router = useRouter();
+  const segments = useSegments();
 
   useEffect(() => {
-    if (fontsLoaded) {
-      SplashScreen.hideAsync();
+    if (!initialized) return;
+
+    const inAuthGroup = segments[0] === '(auth)';
+
+    if (user && !inAuthGroup) {
+      // 로그인 상태이면 메인으로
+      router.replace('/(root)/(tabs)');
+    } else if (!user) {
+      // 비로그인 상태이면 로그인으로
+      router.replace('/signIn');
     }
-  }, [fontsLoaded]);
+  }, [user, initialized, segments]);
 
-  if (!fontsLoaded) return null;
+  return (
+      <Stack>
+        <Stack.Screen name="signIn" options={{ headerShown: false }} />
+        <Stack.Screen name="signUp" options={{ headerShown: false }} />
+        <Stack.Screen name="(root)" options={{ headerShown: false }} />
+      </Stack>
+  );
+};
 
-  return <Stack screenOptions={{ headerShown: false }} />;
-}
+
+const RootLayout = () => {
+  return (
+    <AuthProvider>
+      <InitialLayout />
+    </AuthProvider>
+  );
+};
+
+export default RootLayout;
