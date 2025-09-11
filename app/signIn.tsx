@@ -1,97 +1,99 @@
-import { View, Text, ScrollView, Image, TextInput, TouchableOpacity } from 'react-native';
-import { Link } from "expo-router";
 import React, { useState } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
-import images from '@constants/images';
-import { Checkbox } from 'react-native-paper';
-import { signIn } from '../services/authService';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { useRouter } from 'expo-router';
+
+// [삭제] 잘못된 import 경로 제거
+// import { loginUser } from '../services/authService';
 
 const SignIn = () => {
-  const [checked, setChecked] = useState(false);
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const router = useRouter();
 
-  const handleLogin = async () => {
+  // [수정] API 호출 로직 추가
+  const handleSignIn = async () => {
+    // 'employee' 또는 'manager'를 선택하는 UI가 필요하지만, 우선 'employee'로 고정
+    const role = 'employee';
+
     try {
-      const user = await signIn(email, password);
-      if (checked) {
-        await AsyncStorage.setItem('rememberMe', JSON.stringify({ email, password }));
+      // 백엔드 서버의 주소를 입력해야 합니다.
+      // 예: http://<your-backend-ip-address>:5000/api/auth/login
+      const response = await fetch('http://YOUR_BACKEND_API_URL/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password, role }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // 로그인 성공 시 토큰 저장 및 메인 화면으로 이동
+        // 예: AsyncStorage.setItem('token', data.token);
+        Alert.alert('Login Success', `Welcome ${username}`);
+        router.push('/'); // 메인 화면으로 이동
+      } else {
+        Alert.alert('Login Failed', data.msg || 'Invalid credentials');
       }
-      // 로그인 성공 후 리다이렉트 로직 추가
     } catch (error) {
-      alert("Login failed: " + (error as Error).message);
+      console.error(error);
+      Alert.alert('Login Error', 'An error occurred. Please try again.');
     }
   };
 
   return (
-    <LinearGradient colors={['#112D4E', '#8199B6']} style={{ flex: 1 }}>
-      <SafeAreaView style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <Image source={images.onboarding} style={{ width: '50%' }} resizeMode="contain" />
-          <Text className="text-white text-3xl font-bold text-center mb-10 mt-5">Retail Fun Time</Text>
-          <Text className="text-gray-300 text-center text-xl">GET STARTED</Text>
-
-          <View className="mt-8">
-            <Text className="text-white">User id</Text>
-            <TextInput
-              className="w-[300px] border-b border-gray-400 text-white p-2 mt-1"
-              placeholder="Enter your Id"
-              placeholderTextColor="#A0AEC0"
-              value={email}
-              onChangeText={setEmail}
-            />
-          </View>
-
-          <View className="mt-6">
-            <Text className="text-white">Password</Text>
-            <TextInput
-              className="w-[300px] border-b border-gray-400 text-white p-2 mt-1"
-              placeholder="Enter your password"
-              placeholderTextColor="#A0AEC0"
-              secureTextEntry
-              value={password}
-              onChangeText={setPassword}
-            />
-          </View>
-
-          <View className="w-full flex-row justify-around items-center mt-4">
-            <TouchableOpacity>
-              <Link href="./recoverPassword" className="text-gray-300 underline">Forget password?</Link>
-            </TouchableOpacity>
-
-            <View className="flex-row items-center">
-              <Text className="text-gray-300">Remember me</Text>
-              <Checkbox
-                status={checked ? 'checked' : 'unchecked'}
-                onPress={() => setChecked(!checked)}
-                color="white"
-              />
-            </View>
-          </View>
-
-          <TouchableOpacity activeOpacity={0.8} className="mt-6" onPress={handleLogin}>
-            <LinearGradient
-              colors={['#8199B6', '#112D4E']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              className="w-[300px] py-3 rounded-3xl items-center justify-center border-2 border-white"
-            >
-              <Text className="text-white text-lg font-bold">Log in</Text>
-            </LinearGradient>
-          </TouchableOpacity>
-
-          <View className="flex-row justify-center mt-6">
-            <Text className="text-gray-300">Don’t have an account? </Text>
-            <TouchableOpacity>
-              <Link href="./signUp" className="text-blue-400 underline">Register now</Link>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </SafeAreaView>
-    </LinearGradient>
+    <View style={styles.container}>
+      <Text style={styles.title}>Sign In</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Username"
+        value={username}
+        onChangeText={setUsername}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Password"
+        secureTextEntry
+        value={password}
+        onChangeText={setPassword}
+      />
+      <TouchableOpacity style={styles.button} onPress={handleSignIn}>
+        <Text style={styles.buttonText}>Sign In</Text>
+      </TouchableOpacity>
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: 16,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  input: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginBottom: 12,
+    paddingHorizontal: 8,
+  },
+  button: {
+    backgroundColor: '#007BFF',
+    padding: 10,
+    alignItems: 'center',
+    borderRadius: 5,
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+});
 
 export default SignIn;
