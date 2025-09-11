@@ -1,71 +1,77 @@
-// 디렉토리: app/signIn.tsx
-
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useAuth } from '../context/AuthContext'; // [수정] useAuth hook 사용
+// app/signIn.tsx
+// 🎨 디자인 복구 완료 🎨
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  Alert,
+} from "react-native";
+import React, { useState } from "react";
+import { Link, router } from "expo-router";
+import { useAuth } from "../context/AuthContext";
 
 const SignIn = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [role, setRole] = useState('employee'); // [수정] 역할 상태 추가
-  const [loading, setLoading] = useState(false);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const { login } = useAuth();
-  const router = useRouter();
 
   const handleSignIn = async () => {
-    setLoading(true);
+    if (!username || !password) {
+      Alert.alert("Error", "Please enter both username and password.");
+      return;
+    }
     try {
-      await login(username, password, role);
-      // 성공 시 _layout에서 자동으로 라우팅 처리
+      // Assuming 'employee' role for sign-in for now.
+      // You might want to add a role selection UI if needed.
+      await login(username, password, "employee");
+      router.replace("/(root)/(tabs)"); // Navigate to the main screen
     } catch (error) {
-      Alert.alert('Login Failed', 'Invalid credentials or server error.');
-    } finally {
-      setLoading(false);
+      Alert.alert("Login Failed", "Invalid username or password.");
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Sign In</Text>
-      {/* [추가] 역할 선택 UI */}
-      <View style={styles.roleSelector}>
-        <TouchableOpacity
-          style={[styles.roleButton, role === 'employee' && styles.roleButtonActive]}
-          onPress={() => setRole('employee')}
-        >
-          <Text style={[styles.roleText, role === 'employee' && styles.roleTextActive]}>Employee</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.roleButton, role === 'manager' && styles.roleButtonActive]}
-          onPress={() => setRole('manager')}
-        >
-          <Text style={[styles.roleText, role === 'manager' && styles.roleTextActive]}>Manager</Text>
-        </TouchableOpacity>
-      </View>
+      <Image
+        source={require("../assets/images/storeImage.png")} // Local image
+        style={styles.logo}
+      />
+      <Text style={styles.title}>Retail FunTime</Text>
+      <Text style={styles.subtitle}>
+        Log in to your account to continue...
+      </Text>
 
       <TextInput
         style={styles.input}
         placeholder="Username"
+        placeholderTextColor="#A0A0A0"
         value={username}
         onChangeText={setUsername}
-        autoCapitalize="none"
       />
       <TextInput
         style={styles.input}
         placeholder="Password"
+        placeholderTextColor="#A0A0A0"
         secureTextEntry
         value={password}
         onChangeText={setPassword}
       />
-      <TouchableOpacity style={styles.button} onPress={handleSignIn} disabled={loading}>
-        {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Sign In</Text>}
+
+      <TouchableOpacity style={styles.button} onPress={handleSignIn}>
+        <Text style={styles.buttonText}>Log In</Text>
       </TouchableOpacity>
-      
-      {/* [추가] 회원가입 페이지로 이동하는 버튼 */}
-      <TouchableOpacity onPress={() => router.push('/signUp')} style={{ marginTop: 20 }}>
-        <Text style={{ textAlign: 'center', color: '#007BFF' }}>Don't have an account? Sign Up</Text>
-      </TouchableOpacity>
+
+      <View style={styles.footer}>
+        <Link href="/recoverPassword" style={styles.link}>
+          Forgot Password?
+        </Link>
+        <Link href="/signUp" style={styles.link}>
+          Don't have an account? Sign Up
+        </Link>
+      </View>
     </View>
   );
 };
@@ -73,56 +79,58 @@ const SignIn = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    padding: 16,
-    backgroundColor: '#fff'
+    backgroundColor: "#F0F2F5",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 20,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    borderRadius: 5,
-    marginBottom: 12,
-    paddingHorizontal: 8,
-  },
-  button: {
-    backgroundColor: '#007BFF',
-    padding: 10,
-    alignItems: 'center',
-    borderRadius: 5,
-  },
-  buttonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  // [추가] 스타일
-  roleSelector: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+  logo: {
+    width: 120,
+    height: 120,
     marginBottom: 20,
   },
-  roleButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+  title: {
+    fontSize: 32,
+    fontWeight: "bold",
+    color: "#1E3A8A", // Dark Blue
+    marginBottom: 10,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: "#6B7280", // Gray
+    marginBottom: 30,
+  },
+  input: {
+    width: "100%",
+    backgroundColor: "#FFFFFF",
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 15,
+    fontSize: 16,
     borderWidth: 1,
-    borderColor: '#007BFF',
-    borderRadius: 5,
+    borderColor: "#D1D5DB",
   },
-  roleButtonActive: {
-    backgroundColor: '#007BFF',
+  button: {
+    width: "100%",
+    backgroundColor: "#2563EB", // Blue
+    padding: 18,
+    borderRadius: 10,
+    alignItems: "center",
   },
-  roleText: {
-    color: '#007BFF',
+  buttonText: {
+    color: "#FFFFFF",
+    fontSize: 18,
+    fontWeight: "bold",
   },
-  roleTextActive: {
-    color: '#fff',
-  }
+  footer: {
+    marginTop: 20,
+    alignItems: "center",
+  },
+  link: {
+    color: "#2563EB",
+    fontSize: 14,
+    marginVertical: 5,
+  },
 });
 
 export default SignIn;

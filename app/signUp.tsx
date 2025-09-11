@@ -1,164 +1,147 @@
-// 디렉토리: app/signUp.tsx
-
-import React, { useState } from 'react';
-// [수정] StyleSheet import 추가
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useAuth } from '../context/AuthContext';
-import { Picker } from '@react-native-picker/picker';
-
-const canadianProvinces = [
-    "Alberta", "British Columbia", "Manitoba", "New Brunswick",
-    "Newfoundland and Labrador", "Nova Scotia", "Ontario", "Prince Edward Island",
-    "Quebec", "Saskatchewan"
-];
+// app/signUp.tsx
+// 🎨 진짜 최종 디자인 복구 완료 (Tailwind CSS) 🎨
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  Image,
+  Alert,
+} from "react-native";
+import { Link, router } from "expo-router";
+import React, { useState } from "react";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
+import { Checkbox } from "react-native-paper";
+import images from '@constants/images';
+import { useAuth } from "../context/AuthContext"; // 수정된 AuthContext 사용
 
 const SignUp = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [role, setRole] = useState('employee');
-  const [province, setProvince] = useState(canadianProvinces[0]);
-  const [loading, setLoading] = useState(false);
+  const [checked, setChecked] = useState(false);
+  // 기능 유지를 위해 email 대신 username을 사용하도록 수정했습니다.
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const { register } = useAuth();
-  const router = useRouter();
 
-  const handleSignUp = async () => {
+  const handleRegister = async () => {
     if (password !== confirmPassword) {
-      Alert.alert("Sign Up Failed", "Passwords do not match.");
+      Alert.alert("Error", "Passwords do not match");
       return;
     }
-    setLoading(true);
+    if (!username || !password) {
+      Alert.alert("Error", "Please fill in all fields.");
+      return;
+    }
+    if (!checked) {
+      Alert.alert("Error", "Please agree to the terms and conditions.");
+      return;
+    }
+
     try {
-      await register(username, password, role, province);
-      Alert.alert('Sign Up Success', 'Account created successfully!');
-      router.replace('/signIn');
+      // 기능 유지를 위해 'employee', 'Ontario'를 기본값으로 전달합니다.
+      await register(username, password, "employee", "Ontario");
+      Alert.alert("Success", "Registration successful!", [
+        { text: "OK", onPress: () => router.replace("/signIn") },
+      ]);
     } catch (error) {
-      Alert.alert('Sign Up Failed', 'Username may already exist.');
-    } finally {
-      setLoading(false);
+      Alert.alert("Registration Failed", "This username may already be taken.");
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Sign Up</Text>
-
-      <View style={styles.roleSelector}>
-         <TouchableOpacity
-          style={[styles.roleButton, role === 'employee' && styles.roleButtonActive]}
-          onPress={() => setRole('employee')}
+    <LinearGradient colors={["#112D4E", "#8199B6"]} style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1 }}>
+        <ScrollView
+          contentContainerStyle={{
+            flexGrow: 1,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
         >
-          <Text style={[styles.roleText, role === 'employee' && styles.roleTextActive]}>Employee</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.roleButton, role === 'manager' && styles.roleButtonActive]}
-          onPress={() => setRole('manager')}
-        >
-          <Text style={[styles.roleText, role === 'manager' && styles.roleTextActive]}>Manager</Text>
-        </TouchableOpacity>
-      </View>
-      
-      <View style={styles.pickerContainer}>
-        <Picker
-            selectedValue={province}
-            // [수정] itemValue에 string 타입 명시
-            onValueChange={(itemValue: string) => setProvince(itemValue)}>
-            {canadianProvinces.map(p => <Picker.Item key={p} label={p} value={p} />)}
-        </Picker>
-      </View>
+          <Image
+            source={images.checkIcon}
+            style={{ width: 60, height: 60, marginBottom: 20 }}
+            resizeMode="contain"
+          />
+          <Text className="text-white text-3xl font-bold">Register</Text>
+          <Text className="text-gray-300 mt-1">Create your account</Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Username"
-        value={username}
-        onChangeText={setUsername}
-        autoCapitalize="none"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Confirm Password"
-        secureTextEntry
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-      />
-      <TouchableOpacity style={styles.button} onPress={handleSignUp} disabled={loading}>
-        {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Sign Up</Text>}
-      </TouchableOpacity>
-      
-       <TouchableOpacity onPress={() => router.push('/signIn')} style={{ marginTop: 20 }}>
-        <Text style={{ textAlign: 'center', color: '#007BFF' }}>Already have an account? Sign In</Text>
-      </TouchableOpacity>
-    </View>
+          <View className="w-[300px] mt-6">
+            <Text className="text-gray-300">• Username</Text>
+            <TextInput
+              className="border-b border-gray-400 text-white p-2"
+              placeholder="Enter your username"
+              placeholderTextColor="#A0AEC0"
+              value={username}
+              onChangeText={setUsername}
+            />
+          </View>
+
+          <View className="w-[300px] mt-4">
+            <Text className="text-gray-300">• Password</Text>
+            <TextInput
+              className="border-b border-gray-400 text-white p-2"
+              placeholder="Enter your password"
+              placeholderTextColor="#A0AEC0"
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+            />
+          </View>
+
+          <View className="w-[300px] mt-4">
+            <Text className="text-gray-300">• Confirm Password</Text>
+            <TextInput
+              className="border-b border-gray-400 text-white p-2"
+              placeholder="Confirm your password"
+              placeholderTextColor="#A0AEC0"
+              secureTextEntry
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+            />
+          </View>
+
+          <View className="w-[80%] flex-row items-center mt-4">
+            <Checkbox
+              status={checked ? "checked" : "unchecked"}
+              onPress={() => setChecked(!checked)}
+              color="white"
+            />
+            <Text className="text-gray-300 text-xs mr-2">
+              I agree with privacy policy{" "}
+            </Text>
+            <Link href="/" className="text-blue-400 underline text-xs">
+              Terms and Condition
+            </Link>
+          </View>
+
+          <TouchableOpacity
+            activeOpacity={0.8}
+            className="mt-6"
+            onPress={handleRegister}
+          >
+            <LinearGradient
+              colors={["#8199B6", "#112D4E"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              className="w-[300px] py-3 rounded-3xl items-center justify-center border-2 border-white"
+            >
+              <Text className="text-white text-lg font-bold">Register</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+
+          <View className="flex-row justify-center mt-6">
+            <Text className="text-gray-300">You already have an account? </Text>
+            <Link href="/signIn" className="text-blue-400 underline">
+              Log in
+            </Link>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 };
-
-// [추가] styles 객체 생성
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 16,
-    backgroundColor: '#fff'
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    borderRadius: 5,
-    marginBottom: 12,
-    paddingHorizontal: 8,
-  },
-  button: {
-    backgroundColor: '#007BFF',
-    padding: 10,
-    alignItems: 'center',
-    borderRadius: 5,
-  },
-  buttonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  roleSelector: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: 20,
-  },
-  roleButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderWidth: 1,
-    borderColor: '#007BFF',
-    borderRadius: 5,
-  },
-  roleButtonActive: {
-    backgroundColor: '#007BFF',
-  },
-  roleText: {
-    color: '#007BFF',
-  },
-  roleTextActive: {
-    color: '#fff',
-  },
-  pickerContainer: {
-      borderColor: 'gray',
-      borderWidth: 1,
-      borderRadius: 5,
-      marginBottom: 12
-  }
-});
 
 export default SignUp;

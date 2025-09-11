@@ -1,25 +1,13 @@
 // 디렉토리: context/AuthContext.js
 
-/*
-*
-* [문제 원인]
-* 'Unable to resolve module expo-secure-store' 오류는 해당 라이브러리가 설치되지 않아 발생한 문제입니다.
-* 코드 로직에는 문제가 없으므로, 아래 명령어를 터미널에 입력하여 라이브러리를 설치해주세요.
-*
-* [해결 방법]
-* npx expo install expo-secure-store
-* 또는
-* npm install expo-secure-store
-*/
-
 import { createContext, useState, useEffect, useContext } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
 
 const AuthContext = createContext();
 
-// ⚠️ 중요: YOUR_BACKEND_API_URL을 실제 백엔드 주소로 변경하세요.
-const API_URL = 'http://YOUR_BACKEND_API_URL/api/auth';
+
+const API_URL = 'http://localhost:4000/api/auth';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -32,11 +20,7 @@ export const AuthProvider = ({ children }) => {
         const storedToken = await SecureStore.getItemAsync('token');
         if (storedToken) {
           axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
-          // 여기서 토큰으로 사용자 정보를 다시 불러오는 API를 호출할 수 있습니다.
-          // 예: const { data } = await axios.get(`${API_URL}/me`); setUser(data);
-          // 지금은 단순화를 위해 토큰만 불러옵니다.
           setToken(storedToken);
-          // 임시로 user 객체를 설정합니다. 실제 앱에서는 API 호출로 정보를 가져오세요.
           const storedUser = await SecureStore.getItemAsync('user');
           if(storedUser) setUser(JSON.parse(storedUser));
         }
@@ -60,7 +44,7 @@ export const AuthProvider = ({ children }) => {
       await SecureStore.setItemAsync('user', JSON.stringify(data.user));
       return data;
     } catch (e) {
-      console.log(e.response.data);
+      console.log(e.response ? e.response.data : e.message);
       throw e;
     }
   };
@@ -76,15 +60,9 @@ export const AuthProvider = ({ children }) => {
   const register = async (username, password, role, province) => {
      try {
        const { data } = await axios.post(`${API_URL}/register`, { username, password, role, province });
-       // 회원가입 후 자동 로그인을 원하면 아래 주석을 해제하세요.
-       // setUser(data.user);
-       // setToken(data.token);
-       // axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
-       // await SecureStore.setItemAsync('token', data.token);
-       // await SecureStore.setItemAsync('user', JSON.stringify(data.user));
        return data;
      } catch (e) {
-       console.log(e.response.data);
+       console.log(e.response ? e.response.data : e.message);
        throw e;
      }
   };
