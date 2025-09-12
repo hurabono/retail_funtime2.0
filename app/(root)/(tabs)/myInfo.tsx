@@ -21,6 +21,7 @@ interface UserInfo {
   manager?: {
     username: string;
   }
+  address?: string;
 }
 
 const myInfo = () => {
@@ -159,29 +160,30 @@ const myInfo = () => {
 
           {/* Job Information */}
           <View className="bg-white rounded-xl p-5 mt-6 shadow-md  border-4 border-[#3F72AF]">
-            <Text className="text-[#3F72AF] font-bold">Job Information</Text>
-            <View className="flex-row justify-between mt-2">
-              <View>
-                <Text className="text-gray-500">My role</Text>
-                <Text className="text-[#3F72AF] font-bold">{userInfo.role}</Text>
+              <Text className="text-[#3F72AF] font-bold">Job Information</Text>
+              <View className="flex-row justify-between mt-2">
+                <View>
+                  <Text className="text-gray-500">My role</Text>
+                  <Text className="text-[#3F72AF] font-bold">{userInfo.role}</Text>
+                </View>
+                <View>
+                  <Text className="text-gray-500">Reporting to</Text>
+                  <Text className="text-[#3F72AF] font-bold">{userInfo.manager ? userInfo.manager.username : 'N/A'}</Text>
+                </View>
               </View>
-              <View>
-                <Text className="text-gray-500">Reporting to</Text>
-                <Text className="text-[#3F72AF] font-bold">{userInfo.manager ? userInfo.manager.username : 'N/A'}</Text>
+
+              <View className="mt-4">
+                {/* Cost Center -> Retail Number로 변경 */}
+                <Text className="text-gray-500">Retail Number</Text>
+                <Text className="text-[#3F72AF] font-bold">{userInfo.retailNumber || 'N/A'}</Text>
+              </View>
+
+              <View className="mt-4">
+                <Text className="text-gray-500">Office</Text>
+                {/* ✅ DB에서 가져온 직원 주소 표시 */}
+                <Text className="text-[#3F72AF] font-bold">{userInfo.address || 'N/A'}</Text>
               </View>
             </View>
-
-            <View className="mt-4">
-              {/* Cost Center -> Retail Number로 변경 */}
-              <Text className="text-gray-500">Retail Number</Text> 
-              <Text className="text-[#3F72AF] font-bold">{userInfo.retailNumber || 'N/A'}</Text>
-            </View>
-
-            <View className="mt-4">
-              <Text className="text-gray-500">Office</Text>
-              <Text className="text-[#3F72AF] font-bold">234 Bily Bishop Way, Oakville, ON L6H 6M4</Text>
-            </View>
-          </View>
         </ScrollView>
       </SafeAreaView>
     </LinearGradient>

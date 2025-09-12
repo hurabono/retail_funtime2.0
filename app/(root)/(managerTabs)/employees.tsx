@@ -16,24 +16,27 @@ interface Employee {
   employeeNumber: string;
   retailNumber: string;
   hourlyWage: number;
+  address?: string; // ✅ address 필드 추가
 }
 
 const Employees = () => {
-  const { token } = useAuth(); // AuthContext에서 token 가져오기
+  const { token } = useAuth();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
-  const [editForm, setEditForm] = useState({ retailNumber: '', hourlyWage: '' });
+
+  // ✅ editForm에 address 추가
+  const [editForm, setEditForm] = useState({ retailNumber: '', hourlyWage: '', address: '' });
   
+
   const fetchEmployees = async () => {
     if (!token) {
-        setLoading(false);
-        return;
+      setLoading(false);
+      return;
     }
     try {
       setLoading(true);
-      // -- 수정된 부분: API 요청 시 Authorization 헤더에 토큰 추가 -- //
       const { data } = await axios.get(`${API_URL}/employees`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -49,31 +52,46 @@ const Employees = () => {
   useFocusEffect(
     useCallback(() => {
       fetchEmployees();
-    }, [token]) // token이 있을 때만 실행
+    }, [token])
   );
-  
+
   const handleSelectEmployee = (employee: Employee) => {
     setSelectedEmployee(employee);
+    // ✅ 직원 선택 시 address 포함
     setEditForm({
       retailNumber: employee.retailNumber || '',
-      hourlyWage: employee.hourlyWage.toString()
+      hourlyWage: employee.hourlyWage.toString(),
+      address: employee.address || ''
     });
     setModalVisible(true);
   };
-  
+
   const handleUpdateEmployee = async () => {
+
+    
     if (!selectedEmployee) return;
 
     try {
-      // -- 수정된 부분: API 요청 시 Authorization 헤더에 토큰 추가 -- //
-      const { data } = await axios.put(`${API_URL}/employees/${selectedEmployee._id}`, {
-        retailNumber: editForm.retailNumber,
-        hourlyWage: parseFloat(editForm.hourlyWage) || 0
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      setEmployees(prev => prev.map(emp => emp._id === data._id ? data : emp));
+      const { data } = await axios.put(
+        `${API_URL}/employees/${selectedEmployee._id}`,
+        {
+          retailNumber: editForm.retailNumber,
+          hourlyWage: parseFloat(editForm.hourlyWage) || 0,
+          address: editForm.address // ✅ address 같이 전송
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      // ✅ 업데이트 후 목록 새로고침
+      await fetchEmployees();
+
+      // ✅ state 즉시 반영
+      setEmployees(prev =>
+        prev.map(emp => (emp._id === data._id ? { ...emp, ...data } : emp))
+      );
+
       setModalVisible(false);
       setSelectedEmployee(null);
       Alert.alert('Success', 'Employee information updated.');
@@ -83,13 +101,20 @@ const Employees = () => {
     }
   };
 
+  
+
   if (loading) {
     return (
-      <LinearGradient colors={['#112D4E', '#8199B6']} style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <LinearGradient
+        colors={['#112D4E', '#8199B6']}
+        style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+      >
         <ActivityIndicator size="large" color="#ffffff" />
       </LinearGradient>
     );
   }
+
+  
 
   const renderItem = ({ item }: { item: Employee }) => (
     <TouchableOpacity onPress={() => handleSelectEmployee(item)}>
@@ -98,25 +123,30 @@ const Employees = () => {
         <Text className="text-gray-500 mt-1">Employee #: {item.employeeNumber}</Text>
         <Text className="text-gray-500 mt-1">Retail #: {item.retailNumber || 'N/A'}</Text>
         <Text className="text-gray-500 mt-1">Hourly Wage: ${item.hourlyWage.toFixed(2)}</Text>
+        <Text className="text-gray-500 mt-1">Address: {item.address || 'N/A'}</Text> 
+        {/* ✅ 직원 카드에 address 표시 */}
       </View>
     </TouchableOpacity>
   );
 
   return (
     <LinearGradient colors={['#112D4E', '#8199B6']} style={{ flex: 1 }}>
-      <SafeAreaView className='mt-5' style={{ flex: 1 }}>
+      <SafeAreaView className="mt-5" style={{ flex: 1 }}>
         <View className="px-5">
-            <Text className="text-white text-3xl font-bold text-center my-6">My Employees</Text>
-            {employees.length === 0 ? (
-                <Text className="text-white text-center text-lg mt-10">No employees assigned to you.</Text>
-            ) : (
-                <FlatList
-                data={employees}
-                renderItem={renderItem}
-                keyExtractor={(item) => item._id}
-                contentContainerStyle={{ paddingBottom: 120 }}
-                />
-            )}
+          <Text className="text-white text-3xl font-bold text-center my-6">My Employees</Text>
+          {employees.length === 0 ? (
+            <Text className="text-white text-center text-lg mt-10">
+              No employees assigned to you.
+            </Text>
+          ) : (
+            <FlatList
+              data={employees}
+              renderItem={renderItem}
+              keyExtractor={item => item._id}
+              contentContainerStyle={{ paddingBottom: 120 }}
+              extraData={employees}
+            />
+          )}
         </View>
 
         <Modal
@@ -127,43 +157,54 @@ const Employees = () => {
         >
           <View style={styles.modalBackdrop}>
             <View style={styles.modalContainer}>
-                <ScrollView>
-                    <Text className="text-xl font-bold text-center text-[#112D4E] mb-5">Edit {selectedEmployee?.username}</Text>
-                    
-                    <Text className="text-gray-500 mb-1">Retail Number</Text>
-                    <TextInput
-                        className="w-full border border-gray-300 p-3 rounded-lg mb-4"
-                        placeholder="Enter Retail Number"
-                        value={editForm.retailNumber}
-                        onChangeText={text => setEditForm(prev => ({ ...prev, retailNumber: text }))}
-                    />
+              <ScrollView>
+                <Text className="text-xl font-bold text-center text-[#112D4E] mb-5">
+                  Edit {selectedEmployee?.username}
+                </Text>
 
-                    <Text className="text-gray-500 mb-1">Hourly Wage</Text>
-                    <TextInput
-                        className="w-full border border-gray-300 p-3 rounded-lg mb-6"
-                        placeholder="Enter Hourly Wage"
-                        keyboardType="numeric"
-                        value={editForm.hourlyWage}
-                        onChangeText={text => setEditForm(prev => ({ ...prev, hourlyWage: text }))}
-                    />
+                <Text className="text-gray-500 mb-1">Retail Number</Text>
+                <TextInput
+                  className="w-full border border-gray-300 p-3 rounded-lg mb-4"
+                  placeholder="Enter Retail Number"
+                  value={editForm.retailNumber}
+                  onChangeText={text => setEditForm(prev => ({ ...prev, retailNumber: text }))}
+                />
 
-                    <TouchableOpacity activeOpacity={0.8} className="mb-2" onPress={handleUpdateEmployee}>
-                        <LinearGradient
-                        colors={['#8199B6', '#112D4E']}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
-                        className="w-full py-3 rounded-3xl items-center justify-center border-2 border-white"
-                        >
-                        <Text className="text-white text-lg font-bold">Save Changes</Text>
-                        </LinearGradient>
-                    </TouchableOpacity>
+                <Text className="text-gray-500 mb-1">Hourly Wage</Text>
+                <TextInput
+                  className="w-full border border-gray-300 p-3 rounded-lg mb-6"
+                  placeholder="Enter Hourly Wage"
+                  keyboardType="numeric"
+                  value={editForm.hourlyWage}
+                  onChangeText={text => setEditForm(prev => ({ ...prev, hourlyWage: text }))}
+                />
 
-                    <TouchableOpacity activeOpacity={0.8} onPress={() => setModalVisible(false)}>
-                         <View className="w-full py-3 rounded-3xl items-center justify-center border-2 border-gray-400">
-                             <Text className="text-gray-500 text-lg font-bold">Cancel</Text>
-                         </View>
-                    </TouchableOpacity>
-                </ScrollView>
+                {/* ✅ 주소 입력 필드 추가 */}
+                <Text className="text-gray-500 mb-1">Store Address</Text>
+                <TextInput
+                  className="w-full border border-gray-300 p-3 rounded-lg mb-6"
+                  placeholder="Enter store address"
+                  value={editForm.address}
+                  onChangeText={text => setEditForm(prev => ({ ...prev, address: text }))}
+                />
+
+                <TouchableOpacity activeOpacity={0.8} className="mb-2" onPress={handleUpdateEmployee}>
+                  <LinearGradient
+                    colors={['#8199B6', '#112D4E']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    className="w-full py-3 rounded-3xl items-center justify-center border-2 border-white"
+                  >
+                    <Text className="text-white text-lg font-bold">Save Changes</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+
+                <TouchableOpacity activeOpacity={0.8} onPress={() => setModalVisible(false)}>
+                  <View className="w-full py-3 rounded-3xl items-center justify-center border-2 border-gray-400">
+                    <Text className="text-gray-500 text-lg font-bold">Cancel</Text>
+                  </View>
+                </TouchableOpacity>
+              </ScrollView>
             </View>
           </View>
         </Modal>
@@ -173,24 +214,23 @@ const Employees = () => {
 };
 
 const styles = StyleSheet.create({
-    modalBackdrop: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0,0,0,0.5)'
-    },
-    modalContainer: {
-        width: '90%',
-        backgroundColor: 'white',
-        borderRadius: 15,
-        padding: 25,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5
-    }
+  modalBackdrop: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)'
+  },
+  modalContainer: {
+    width: '90%',
+    backgroundColor: 'white',
+    borderRadius: 15,
+    padding: 25,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5
+  }
 });
-
 
 export default Employees;
