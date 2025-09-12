@@ -21,6 +21,7 @@ interface Employee {
 
 const Employees = () => {
   const { token } = useAuth();
+  
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);

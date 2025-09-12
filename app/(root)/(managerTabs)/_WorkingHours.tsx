@@ -1,22 +1,162 @@
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
-import React from 'react';
+import { View, Text, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import axios from 'axios';
+import { useAuth } from '../../../context/AuthContext';
+
+const API_URL = 'http://localhost:4000/api/auth';
+
+interface TimeLog {
+  _id?: string;
+  clockIn: string;
+  clockOut?: string;
+}
 
 const WorkingHours = () => {
+  const { token } = useAuth();
+  const [timeLogs, setTimeLogs] = useState<TimeLog[]>([]);
+  const [isClockedIn, setIsClockedIn] = useState(false);
+  const [todaySeconds, setTodaySeconds] = useState(0);
+  const [weekSeconds, setWeekSeconds] = useState(0);
+  const intervalRef = useRef<number | null>(null);
+
+  // DB에서 기존 시간 기록 불러오기
+  const fetchTimeLogs = async () => {
+    try {
+      const { data } = await axios.get(`${API_URL}/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setTimeLogs(data.timeLogs || []);
+      calculateWeekTime(data.timeLogs || []);
+      // 현재 clockIn 상태 체크
+      const lastLog = data.timeLogs?.[data.timeLogs.length - 1];
+      if (lastLog && !lastLog.clockOut) {
+        setIsClockedIn(true);
+        startTimer();
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  // 이번 주 누적 시간 계산
+  const calculateWeekTime = (logs: TimeLog[]) => {
+    const now = new Date();
+    let weekTotal = 0;
+    let todayTotal = 0;
+
+    logs.forEach((log) => {
+      if (!log.clockOut) return;
+      const start = new Date(log.clockIn);
+      const end = new Date(log.clockOut);
+      const diffSec = (end.getTime() - start.getTime()) / 1000;
+
+      if (start.toDateString() === now.toDateString()) todayTotal += diffSec;
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() - now.getDay());
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekEnd.getDate() + 6);
+      if (start >= weekStart && start <= weekEnd) weekTotal += diffSec;
+    });
+
+    setTodaySeconds(todayTotal);
+    setWeekSeconds(weekTotal);
+  };
+
+  // 초를 hh:mm:ss 형식으로 변환
+  const formatTime = (sec: number) => {
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    const s = Math.floor(sec % 60);
+    return `${h > 0 ? h + ':' : ''}${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+  // 타이머 시작
+  const startTimer = () => {
+    if (intervalRef.current) return;
+    intervalRef.current = setInterval(() => {
+      setTodaySeconds((prev) => prev + 1);
+      setWeekSeconds((prev) => prev + 1);
+    }, 1000) as unknown as number;
+  };
+
+  // 타이머 멈춤
+  const stopTimer = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current as unknown as number);
+      intervalRef.current = null;
+    }
+  };
+
+  // Clock In 버튼
+  const handleClockIn = async () => {
+    try {
+      const nowISO = new Date().toISOString();
+      await axios.post(`${API_URL}/logtime`, { clockIn: nowISO }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setIsClockedIn(true);
+
+      // 새 로그 추가 (clockOut 없음)
+      setTimeLogs(prev => [
+        ...prev.filter(log => log.clockOut), // 이전 미완료 로그 제거
+        { clockIn: nowISO }
+      ]);
+
+      startTimer();
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', 'Failed to clock in');
+    }
+  };
+
+  // Clock Out 버튼
+  const handleClockOut = async () => {
+    try {
+      const nowISO = new Date().toISOString();
+      await axios.post(`${API_URL}/logtime`, { clockOut: nowISO }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setIsClockedIn(false);
+      stopTimer();
+
+      // 마지막 로그만 clockOut 업데이트
+      setTimeLogs(prev =>
+        prev.map((log, idx) =>
+          idx === prev.length - 1 ? { ...log, clockOut: nowISO } : log
+        )
+      );
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', 'Failed to clock out');
+    }
+  };
+
+  // useEffect 종료 시 clearInterval
+  useEffect(() => {
+    fetchTimeLogs();
+    return () => {
+      stopTimer();
+    };
+  }, []);
+
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
   return (
     <LinearGradient colors={['#112D4E', '#8199B6']} className="flex-1">
       <SafeAreaView className="flex-1 mt-5">
-        <ScrollView contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 20, paddingBottom:100 }}>
-
+        <ScrollView contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 20, paddingBottom: 100 }}>
           {/* Store Name */}
           <View className="mt-6 flex-row justify-between items-center">
             <Text className="text-white text-xl font-bold">🏪 <Text className="underline">Store3064</Text></Text>
           </View>
 
-            {/* Header */}
-          <Text className="text-white text-3xl font-bold mt-5">Manager Working hours</Text>
-
+          {/* Header */}
+          <Text className="text-white text-3xl font-bold mt-5">Working hours</Text>
 
           {/* Meeting Notification */}
           <View className="mt-4 bg-white rounded-full py-2 px-4 flex-row items-center">
@@ -30,46 +170,60 @@ const WorkingHours = () => {
             <View className="bg-white rounded-3xl p-2 mt-3 shadow-md flex-row justify-evenly items-center border-4 border-[#3F72AF]">
               <View>
                 <Text className="text-[#3F72AF] text-sm font-bold ">• Today</Text>
-                <Text className="text-[#112D4E] text-3xl font-bold">00:50 hr</Text>
+                <Text className="text-[#112D4E] text-3xl font-bold">{formatTime(todaySeconds)}</Text>
               </View>
               <View className="h-[100px] bg-[#3F72AF]  w-[0.5px]"></View>
               <View>
                 <Text className="text-[#3F72AF] text-sm font-bold">• This week</Text>
-                <Text className="text-[#112D4E] text-3xl font-bold">32:50 hr</Text>
+                <Text className="text-[#112D4E] text-3xl font-bold">{formatTime(weekSeconds)}</Text>
               </View>
             </View>
 
-               {/* Clock in and out button */}
-            <TouchableOpacity activeOpacity={0.8} className="mt-6 items-center justify-center">
-                        <LinearGradient
-                          colors={['#3F72AF', '#112D4E']} 
-                          start={{ x: 0, y: 0 }} 
-                          end={{ x: 1, y: 1 }} 
-                          className="w-[200px] py-2 rounded-full flex items-center justify-center border-2 border-white"
-                        >
-                      <Text className="text-white text-lg font-bold"> Clocked out </Text>
-                        </LinearGradient>
+            {/* Clock in/out Button */}
+            <TouchableOpacity
+              activeOpacity={0.8}
+              className="mt-6 items-center justify-center"
+              onPress={isClockedIn ? handleClockOut : handleClockIn}
+            >
+              <LinearGradient
+                colors={['#3F72AF', '#112D4E']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                className="w-[200px] py-2 rounded-full flex items-center justify-center border-2 border-white"
+              >
+                <Text className="text-white text-lg font-bold">{isClockedIn ? 'Clocked Out' : 'Clock In'}</Text>
+              </LinearGradient>
             </TouchableOpacity>
-
           </View>
 
           {/* Work Log Section */}
-          {[{ date: '27 October 2024' }, { date: '20 October 2024' }].map((log, index) => (
-            <View key={index} className="bg-white rounded-xl p-5 mt-6 shadow-md border-4 border-[#3F72AF]">
-              <Text className="text-gray-500 text-sm">📅 {log.date}</Text>
-              <View className="mt-2 flex-row justify-between">
-                <View>
-                  <Text className="text-gray-500">• Total Hours</Text>
-                  <Text className="text-[#3F72AF] font-bold">8:00 hrs</Text>
-                </View>
-                <View>
-                  <Text className="text-gray-500">• Check in & out</Text>
-                  <Text className="text-[#3F72AF] font-bold">9:00am - 5:00pm</Text>
+          {timeLogs
+            .filter(log => log.clockIn && new Date(log.clockIn) >= oneWeekAgo)
+            .map((log, index) => (
+              <View key={index} className="bg-white rounded-xl p-5 mt-6 shadow-md border-4 border-[#3F72AF]">
+                <Text className="text-gray-500 text-sm">
+                  📅 {log.clockIn ? new Date(log.clockIn).toLocaleDateString() : '-'}
+                </Text>
+                <View className="mt-2 flex-row justify-between">
+                  <View>
+                    <Text className="text-gray-500">• Total Hours</Text>
+                    <Text className="text-[#3F72AF] font-bold">
+                      {log.clockIn && log.clockOut
+                        ? ((new Date(log.clockOut).getTime() - new Date(log.clockIn).getTime()) / 3600000).toFixed(2)
+                        : log.clockIn && !log.clockOut
+                        ? (todaySeconds / 3600).toFixed(2)
+                        : '0'} hrs
+                    </Text>
+                  </View>
+                  <View>
+                    <Text className="text-gray-500">• Check in & out</Text>
+                    <Text className="text-[#3F72AF] font-bold">
+                      {log.clockIn ? new Date(log.clockIn).toLocaleTimeString() : '-'} - {log.clockOut ? new Date(log.clockOut).toLocaleTimeString() : '-'}
+                    </Text>
+                  </View>
                 </View>
               </View>
-            </View>
-          ))}
-
+            ))}
         </ScrollView>
       </SafeAreaView>
     </LinearGradient>

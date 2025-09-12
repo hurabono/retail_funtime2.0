@@ -87,9 +87,9 @@ export default function TabLayout() {
       />
 
 <Tabs.Screen
-        name="_Schedule"
+        name="_ManagerSchedule"
         options={{
-          href: null, // ✅ 탭 바에서 안 보이게 설정
+           // ✅ 탭 바에서 안 보이게 설정
         }}
       />
     </Tabs>
