@@ -58,20 +58,29 @@ export const AuthProvider = ({ children }) => {
     loadStorageData();
   }, []);
 
-  const login = async (username, password, role) => {
-    try {
-      const { data } = await axios.post(`${API_URL}/login`, { username, password, role });
-      setUser(data.user);
-      setToken(data.token);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
-      await storage.setItem('token', data.token);
-      await storage.setItem('user', JSON.stringify(data.user));
-      return data;
-    } catch (e) {
-      console.log(e.response ? e.response.data : e.message);
-      throw e;
-    }
-  };
+ const login = async (username, password, role) => {
+  try {
+    const { data } = await axios.post(`${API_URL}/login`, { username, password, role });
+
+    const loggedInUser = {
+      _id: data._id,
+      username: data.username,
+      role: data.role,
+    };
+
+    setUser(loggedInUser);
+    setToken(data.token);
+    axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
+    await storage.setItem('token', data.token);
+    await storage.setItem('user', JSON.stringify(loggedInUser));
+
+    return data;
+  } catch (e) {
+    console.log(e.response ? e.response.data : e.message);
+    throw e;
+  }
+};
+
 
   const logout = async () => {
     setUser(null);
@@ -81,16 +90,26 @@ export const AuthProvider = ({ children }) => {
     await storage.deleteItem('user');
   };
 
-  // [수정] register 함수에 employeeNumber 파라미터를 추가하고, 요청 본문에 포함시킵니다.
-  const register = async (username, password, role, province, employeeNumber) => {
+  // -- 수정된 부분: register 함수에 storeNumber와 managerEmployeeNumber 파라미터를 추가했습니다. -- //
+  const register = async (username, password, role, province, employeeNumber, storeNumber, managerEmployeeNumber) => {
     try {
-      const { data } = await axios.post(`${API_URL}/register`, { username, password, role, province, employeeNumber });
+      const { data } = await axios.post(`${API_URL}/register`, { 
+        username, 
+        password, 
+        role, 
+        province, 
+        employeeNumber,
+        storeNumber, 
+        managerEmployeeNumber 
+      });
       return data;
     } catch (e) {
       console.log(e.response ? e.response.data : e.message);
       throw e;
     }
   };
+
+  
 
   return (
     <AuthContext.Provider value={{ user, token, initialized, login, logout, register }}>
