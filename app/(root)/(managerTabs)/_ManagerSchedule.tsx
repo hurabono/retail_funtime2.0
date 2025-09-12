@@ -130,7 +130,7 @@ const ManagerSchedule = () => {
           if (workHours <= 0) workHours += 24;
 
           await axios.post(`${API_URL}/employees/${selectedEmployee}/schedule`,
-            { date: new Date(dateStr).toISOString(), startTime: s.startTime, endTime: s.endTime, workHours },
+            { date: new Date(dateStr).toISOString(), startTime: s.startTime, endTime: s.endTime, workHours, position: s.position },
             { headers: { Authorization: `Bearer ${token}` } });
         }
       }
@@ -173,8 +173,8 @@ const ManagerSchedule = () => {
                 {shifts.length === 0 && <Text className="text-[#3F72AF] font-bold mt-[35px]">Not Scheduled</Text>}
 
                 {shifts.map((s, idx) => (
-                  <View key={idx} className="mt-2 bg-gray-100 p-2 rounded-lg">
-                    <Text>{s.startTime} - {s.endTime} | {s.position} | {s.workHours.toFixed(2)} hrs</Text>
+                  <View key={idx} className="mt-2 bg-gray-100 p-2 rounded-lg -z-10 flex justify-center items-center">
+                    <Text className='text-[#3F72AF] font-bold'>{s.startTime} - {s.endTime} | {s.position} | {s.workHours.toFixed(2)} hrs</Text>
                     {s.break && <Text>🍽 Break: {s.break}</Text>}
                     <TouchableOpacity onPress={() => deleteShift(dayDate.toDateString(), idx)}><Text className="text-red-500 underline">Delete</Text></TouchableOpacity>
                   </View>
