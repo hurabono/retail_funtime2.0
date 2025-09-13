@@ -1,42 +1,138 @@
-import { useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { useState, useEffect } from "react";
+import { View, Text, TouchableOpacity, ScrollView, TextInput, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
+import { Picker } from "@react-native-picker/picker";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const requests = [
-  {
-    id: 1,
-    date: "Saturday, November 9",
-    type: "Absence",
-    reason: "Personal Injury / Illness",
-    confirmation: "246310354",
-    submitted: "11/08/2024 11:25pm",
-    status: "Approved",
-  },
-  {
-    id: 2,
-    date: "Friday, November 1",
-    type: "Absence",
-    reason: "Personal Injury / Illness",
-    confirmation: "246310354",
-    submitted: "11/08/2024 11:25pm",
-    status: "Rejected",
-  },
-];
+// API 호출 base URL
+const API_URL = "http://localhost:4000/api/auth";
 
-const myRequest = () => {
+const MyRequest = () => {
   const [filter, setFilter] = useState("Approved");
+  const [requests, setRequests] = useState<any[]>([]);
+  const [showForm, setShowForm] = useState(false);
+  const [date, setDate] = useState("");
+  const [reason, setReason] = useState("vacation");
+  const [details, setDetails] = useState("");
+
+  // Past Requests 불러오기
+  const fetchRequests = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token"); 
+      if (!token) {
+        Alert.alert("Error", "No token found, please log in again.");
+        return;
+      }
+
+      const res = await fetch(`${API_URL}/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`, 
+        },
+      });
+
+      const data = await res.json();
+      setRequests(data.leaveRequests || []);
+    } catch (err) {
+      console.error("❌ fetchRequests error:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchRequests();
+  }, []);
+
+  
+      // MyRequest.js
+      const handleSubmit = async () => {
+        if (!date || !reason || !details) {
+          Alert.alert("Error", "Please fill out all fields");
+          return;
+        }
+        
+        // 💡 수정: 날짜 형식을 YYYY-MM-DD로 변환
+        const formattedDate = date.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3');
+
+        try {
+          const token = await AsyncStorage.getItem("token");
+          if (!token) {
+            Alert.alert("Error", "No token found, please log in again.");
+            return;
+          }
+
+          console.log("Submitting leave request:", { date, reason, details, token });
+
+          const res = await fetch(`${API_URL}/request-leave`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            // 💡 수정: 변환된 날짜 포맷 사용
+            body: JSON.stringify({ date: formattedDate, reason, details }), 
+          });
+
+          const data = await res.json();
+          console.log("Server response:", data);
+          
+          if (res.ok) {
+            Alert.alert("Success", "Leave request submitted");
+            setDate("");
+            setReason("vacation");
+            setDetails("");
+            setShowForm(false);
+            fetchRequests(); // 새 요청 반영
+          } else {
+            Alert.alert("Error", data.message || "Failed to submit");
+          }
+        } catch (err) {
+          console.error("❌ handleSubmit error:", err);
+          Alert.alert("Error", "Something went wrong");
+        }
+      };
+
+      const formatDate = (isoDate: string) => {
+          if (!isoDate) return 'N/A';
+          try {
+            const d = new Date(isoDate);
+            const year = d.getUTCFullYear();
+            const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+            const day = String(d.getUTCDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+          } catch (e) {
+            return 'Invalid Date';
+          }
+        };
+
+        const formatSubmittedDate = (isoDate: string) => {
+          if (!isoDate) return 'N/A';
+          try {
+            const d = new Date(isoDate);
+            const formattedDate = d.toLocaleString('ko-KR', {
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false,
+            });
+            return formattedDate.replace(/\./g, '').replace(/ /g, '-').replace(/-$/g, '');
+          } catch (e) {
+            return 'Invalid Date';
+          }
+        };
 
   return (
     <LinearGradient colors={["#112D4E", "#8199B6"]} className="flex-1">
       <SafeAreaView className="flex-1 mt-10" style={{ flex: 1 }}>
-        <ScrollView className="flex-1" contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 20, paddingBottom:100 }}>
+        <ScrollView
+          className="flex-1"
+          contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 20, paddingBottom: 100 }}
+        >
           {/* 상단 네비게이션 */}
           <View className="flex-row justify-between border-b border-white pb-3">
             <Text className="text-white text-lg font-bold">My Schedule</Text>
-            <Text className="text-white text-lg font-bold underline">
-              My Request
-            </Text>
+            <Text className="text-white text-lg font-bold underline">My Request</Text>
           </View>
 
           {/* 설명 섹션 */}
@@ -47,30 +143,65 @@ const myRequest = () => {
             </Text>
           </View>
 
-          {/* 잔여 시간 정보 */}
-          <View className="mt-4 border-t border-gray-500 pt-4">
-            <Text className="text-white font-bold">🔹 My balances</Text>
-            <View className="flex-row justify-between mt-2">
-              <Text className="text-gray-300 text-sm">Vacation: 56:32hrs</Text>
-              <Text className="text-gray-300 text-sm">Personal: 6:30hrs</Text>
-              <Text className="text-gray-300 text-sm">Attendance: 23.00pts</Text>
-              <Text className="text-gray-300 text-sm">PEL: 2 days</Text>
-            </View>
-          </View>
 
           {/* 요청 관리 섹션 */}
           <View className="bg-gray-200 p-4 mt-6 rounded-lg">
-            <Text className="text-blue-900 font-bold text-lg">
-              Manage my Requests
-            </Text>
+            <Text className="text-blue-900 font-bold text-lg">Manage my Requests</Text>
             <Text className="text-gray-500 text-sm">
               Upcoming absences, time off, and shift swaps.
             </Text>
-            <TouchableOpacity className="bg-blue-900 py-2 px-4 rounded-lg mt-3">
-              <Text className="text-white font-bold text-center">
-                Make Request
-              </Text>
+            <TouchableOpacity
+              className="bg-blue-900 py-2 px-4 rounded-lg mt-3"
+              onPress={() => setShowForm(!showForm)}
+            >
+              <Text className="text-white font-bold text-center">Make Request</Text>
             </TouchableOpacity>
+
+            {/* 요청 Form */}
+            {showForm && (
+              <View className="mt-4 bg-white p-4 rounded-lg">
+                {/* Date */}
+                <Text className="text-blue-900 font-bold mb-2">Date</Text>
+                <TextInput
+                  className="border border-gray-400 rounded p-2 mb-3"
+                  placeholder="YYYY-MM-DD"
+                  value={date}
+                  onChangeText={setDate}
+                />
+
+                {/* Reason */}
+                <Text className="text-blue-900 font-bold mb-2">Reason</Text>
+                <View className="border border-gray-400 rounded mb-3">
+                  <Picker
+                    selectedValue={reason}
+                    onValueChange={(itemValue) => setReason(itemValue)}
+                  >
+                    <Picker.Item label="Vacation" value="vacation" />
+                    <Picker.Item label="Absence" value="absence" />
+                    <Picker.Item label="Day Off" value="day_off" />
+                    <Picker.Item label="Other" value="other" />
+                  </Picker>
+                </View>
+
+                {/* Extra Details */}
+                <Text className="text-blue-900 font-bold mb-2">Details</Text>
+                <TextInput
+                  className="border border-gray-400 rounded p-2 mb-3"
+                  placeholder="Write additional details..."
+                  value={details}
+                  onChangeText={setDetails}
+                  multiline
+                />
+
+                {/* Submit Button */}
+                <TouchableOpacity
+                  className="bg-green-600 py-2 px-4 rounded-lg mt-2"
+                  onPress={handleSubmit}
+                >
+                  <Text className="text-white font-bold text-center">Submit</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
 
           {/* 과거 요청 섹션 */}
@@ -83,15 +214,17 @@ const myRequest = () => {
 
           {/* 필터 버튼 */}
           <View className="flex-row justify-between mt-4 bg-gray-800 p-2 rounded-full">
-            {["Review", "Approved", "Rejected"].map((status) => (
+            {["pending", "approved", "denied"].map((status) => (
               <TouchableOpacity
                 key={status}
                 className={`px-4 py-2 rounded-full ${
-                  filter === status ? "bg-green-400" : "bg-gray-500"
+                  filter.toLowerCase() === status ? "bg-green-400" : "bg-gray-500"
                 }`}
                 onPress={() => setFilter(status)}
               >
-                <Text className="text-white font-bold">{status}</Text>
+                <Text className="text-white font-bold">
+                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                </Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -99,21 +232,30 @@ const myRequest = () => {
           {/* 요청 목록 */}
           <View className="mt-6">
             {requests
-              .filter((req) => req.status === filter)
+              .filter((req) => req.status?.toLowerCase() === filter.toLowerCase())
               .map((req) => (
                 <View
-                  key={req.id}
+                  key={req._id}
                   className="bg-white p-4 rounded-lg shadow-md mb-4 border-4 border-blue-500"
                 >
-                  <Text className="text-blue-900 font-bold">{req.type}</Text>
+                  <Text className="text-blue-900 font-bold">
+                  {req.reason === "vacation"
+                    ? "Vacation"
+                    : req.reason === "absence"
+                    ? "Absence"
+                    : req.reason === "day_off"
+                    ? "Day Off"
+                    : "Other"}
+                </Text>
                   <Text className="text-black text-lg font-bold">
-                    {req.date}
+                     {formatDate(req.date)}
                   </Text>
-                  <Text className="text-gray-500">{req.reason}</Text>
+                  <Text className="text-gray-500">{req.details}</Text>
                   <Text className="text-gray-500">
-                    Confirmation: {req.confirmation}
+                    Submitted: {formatSubmittedDate(req.submittedAt)}
+                    
                   </Text>
-                  <Text className="text-gray-500">Submitted: {req.submitted}</Text>
+                  <Text className="text-gray-500">Status: {req.status}</Text>
                 </View>
               ))}
           </View>
@@ -123,4 +265,4 @@ const myRequest = () => {
   );
 };
 
-export default myRequest;
+export default MyRequest;

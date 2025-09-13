@@ -86,6 +86,13 @@ export default function TabLayout() {
         }}
       />
 
+      <Tabs.Screen
+        name="ManagerInbox"
+        options={{
+           // ✅ 탭 바에서 안 보이게 설정
+        }}
+      />
+
 <Tabs.Screen
         name="_ManagerSchedule"
         options={{
@@ -93,5 +100,6 @@ export default function TabLayout() {
         }}
       />
     </Tabs>
+    
   );
 }
