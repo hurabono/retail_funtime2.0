@@ -95,7 +95,9 @@ const ScheduleScreen = () => {
                 </View>
 
                 {/* Schedule Content */}
-                <Text className="text-[#3F72AF] font-bold text-lg mt-[35px]">
+                <Text 
+                  className={`font-bold text-lg mt-[35px] ${schedule ? 'text-[#3F72AF]' : 'text-gray-300'}`}
+                >
                   {schedule ? schedule.title || 'Scheduled Shift' : 'Not Scheduled'}
                 </Text>
                 {schedule && schedule.workHours && <Text className="text-[#3F72AF] font-bold absolute top-5 right-5">{schedule.workHours}h</Text>}
