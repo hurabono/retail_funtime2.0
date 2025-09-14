@@ -71,14 +71,6 @@ export default function TabLayout() {
         }}
       />
       
-      {/* ✅ 네비게이션 메뉴에서 숨김 */}
-      <Tabs.Screen
-        name="_MyRequest"
-        options={{
-          href: null, // ✅ 탭 바에서 안 보이게 설정
-        }}
-      />
-
       <Tabs.Screen
         name="_WorkingHours"
         options={{
@@ -92,6 +84,12 @@ export default function TabLayout() {
            // ✅ 탭 바에서 안 보이게 설정
         }}
       />
+      <Tabs.Screen
+        name="ManagerTimeLogs"
+        options={{
+           // ✅ 탭 바에서 안 보이게 설정
+        }}
+      />
 
 <Tabs.Screen
         name="_ManagerSchedule"
@@ -100,6 +98,7 @@ export default function TabLayout() {
         }}
       />
     </Tabs>
+    
     
   );
 }

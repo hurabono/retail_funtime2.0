@@ -236,7 +236,7 @@ const MyRequest = () => {
               .map((req) => (
                 <View
                   key={req._id}
-                  className="bg-white p-4 rounded-lg shadow-md mb-4 border-4 border-blue-500"
+                  className="bg-white p-4 rounded-lg shadow-md mb-4 border-4 border-blue-900"
                 >
                   <Text className="text-blue-900 font-bold">
                   {req.reason === "vacation"
@@ -250,7 +250,7 @@ const MyRequest = () => {
                   <Text className="text-black text-lg font-bold">
                      {formatDate(req.date)}
                   </Text>
-                  <Text className="text-gray-500">{req.details}</Text>
+                  <Text className="text-gray-500 text-base mb-2">{req.details}</Text>
                   <Text className="text-gray-500">
                     Submitted: {formatSubmittedDate(req.submittedAt)}
                     
