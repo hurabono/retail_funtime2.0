@@ -85,6 +85,14 @@ export default function TabLayout() {
         }}
       />
 
+      <Tabs.Screen
+        name="AnnouncementListScreen"
+        options={{
+         href: null, // ✅ 탭 바에서 안 보이게 설정
+        }}
+      />
+
+
 <Tabs.Screen
         name="_Schedule"
         options={{

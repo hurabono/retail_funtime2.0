@@ -49,7 +49,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="inbox"
+        name="ManagerInbox"
         options={{
           tabBarIcon: () => (
             <View className="items-center">
@@ -79,25 +79,34 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name="ManagerInbox"
+        name="ManagerTimeLogs"
         options={{
-           // ✅ 탭 바에서 안 보이게 설정
+           href: null,// ✅ 탭 바에서 안 보이게 설정
         }}
       />
+
       <Tabs.Screen
-        name="ManagerTimeLogs"
+        name="ManagerPayments"
         options={{
            // ✅ 탭 바에서 안 보이게 설정
         }}
       />
 
-<Tabs.Screen
-        name="_ManagerSchedule"
+      <Tabs.Screen
+        name="AnnouncementManagerScreen"
         options={{
            // ✅ 탭 바에서 안 보이게 설정
         }}
       />
+
+    <Tabs.Screen
+        name="_ManagerSchedule"
+        options={{
+           href: null,// ✅ 탭 바에서 안 보이게 설정
+        }}
+      />
     </Tabs>
+    
     
     
   );
