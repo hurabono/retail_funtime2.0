@@ -9,21 +9,84 @@ import axios from "axios";
 
 const API_URL = 'http://localhost:4000/api/auth';
 
+
+// setting interface for Announcement
 interface Announcement {
   _id: string;
   title: string;
   createdAt?: string;
 }
 
+
+// setting interface for user inforamtion
+interface Schedule {
+  date: string;
+  startTime: string;
+  endTime: string;
+  workHours: number;
+  position: string;
+}
+
+interface TimeLog {
+  clockIn?: string;
+  clockOut?: string;
+  breakStart?: string;
+  breakEnd?: string;
+}
+
+
+interface UserInfo {
+  _id: string;
+  username: string;
+  employeeNumber: string;
+  storeNumber: string;
+  hourlyWage: number;
+  retailNumber: string;
+  role: string;
+  province: string;
+  createdAt: string; 
+  manager?: {
+  username: string;
+}
+  address?: string;
+  schedules?: Schedule[];
+  timeLogs?: TimeLog[];
+}
+
 const Index = () => {
   const { user, token, logout } = useAuth();
   const [latestAnnouncement, setLatestAnnouncement] = useState<Announcement | null>(null);
+  const [todaySchedule, setTodaySchedule] = useState<string>("NO SCHEDULE");
+  const [weekNumber, setWeekNumber] = useState<string>("week0");
+  const [isClockedIn, setIsClockedIn] = useState<boolean>(false);
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [todayPosition, setTodayPosition] = useState<string>("");
 
+
+
+  // logout handling
   const handleLogout = async () => {
     try {
       await logout();
     } catch (e) {
       Alert.alert('Error', 'Logout failed. Please try again.');
+    }
+  };
+
+  // 사용자 정보 우선 가져오기
+   const fetchMyInfo = async () => {
+    try {
+      setLoading(true);
+      const { data } = await axios.get('http://localhost:4000/api/auth/me', {
+          headers: { Authorization: `Bearer ${token}` }
+      });
+      setUserInfo(data);
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', 'Failed to fetch user information.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -49,6 +112,56 @@ const Index = () => {
     fetchLatestAnnouncement();
   }, [token]);
 
+  useEffect(() => {
+      fetchMyInfo();
+    }, []);
+  
+
+
+  // calculate today's date for checking schedule
+  const today = new Date();
+  const formattedDate = today.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+  // 오늘 스케줄과 근무주 계산
+  useEffect(() => {
+    //상세 정보가 있는 userInfo 객체로 변경
+   if (userInfo) {
+
+       // week 계산 (Created At)
+       //userInfo 객체의 정보 사용
+      if (userInfo.createdAt) {
+        const start = new Date(userInfo.createdAt);
+        const diffWeeks = Math.ceil(((today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) / 7);
+        setWeekNumber(`week${diffWeeks}`);
+      }
+
+      // 오늘 스케줄 찾기
+      if (userInfo.schedules && userInfo.schedules.length > 0) { 
+        // 타입을 any 대신 Schedule로 지정
+        const todayShift = userInfo.schedules.find((s: Schedule) => {
+          const d = new Date(s.date);
+          return d.getFullYear() === today.getFullYear() &&
+                d.getMonth() === today.getMonth() &&
+                d.getDate() === today.getDate();
+        });
+        if (todayShift) {
+          setTodaySchedule(`${todayShift.startTime} - ${todayShift.endTime}`);
+          setTodayPosition(todayShift.position);
+        } else {
+          setTodaySchedule("NO SCHEDULE");
+          setTodayPosition(""); 
+        }
+      }
+
+      // Clocked in/out 상태
+      if (userInfo.timeLogs && userInfo.timeLogs.length > 0) {
+        const lastLog = userInfo.timeLogs[userInfo.timeLogs.length - 1];
+        setIsClockedIn(!!lastLog.clockIn && !lastLog.clockOut);
+      }
+  }
+}, [userInfo]);
+
+
   return (
     <LinearGradient colors={["#112D4E", "#8199B6"]} className="flex-1">
       <SafeAreaView style={{ flex: 1 }} className="flex-1 mt-10">
@@ -57,9 +170,9 @@ const Index = () => {
           {/* Header Section */}
           <View className="flex-row justify-between items-center mt-5">
             <View>
-              <Text className="text-white text-lg font-bold">🏪 Store3064</Text>
+              <Text className="text-white text-lg font-bold">🏪 Store{userInfo?.storeNumber}</Text>
               <Text className="text-white text-2xl font-bold mt-1">
-                Hello, {user?.name || 'User'}!
+                Hello, {userInfo?.username || 'User'}!
               </Text>
               <Text className="text-gray-300 mt-1 text-xs">
                 Summary of your work schedule today
@@ -89,14 +202,20 @@ const Index = () => {
               <View>
                 <View className="flex-row justify-between items-center mb-2" >
                   <Text className="bg-[#112D4E] text-white px-2 py-1 font-semibold rounded-full w-[140px]">
-                    Nov 12 / 2024
+                    {formattedDate}
                   </Text>
-                  <Image className="absolute right-[-30px] top-[-7px]" source={images.Indexcalendar} style={{ width: 70 }} resizeMode="contain" />
+                  <Image className="absolute right-[-12px] top-[-7px]" source={images.Indexcalendar} style={{ width: 70 }} resizeMode="contain" />
                 </View>
 
-                <View className="mt-3">
-                  <Text className="text-[#112D4E] font-medium underline">week42</Text>
-                  <Text className="text-[#3F72AF] text-lg font-bold">NO SCHEDULE</Text>
+                <View className="ml-2">
+                  <Text className="text-[#112D4E] font-medium underline">{weekNumber}</Text>
+                  <Text className="flex flex-col text-[#3F72AF] text-base font-bold">
+                    {todayPosition && (
+                        <Text className="text-[#112D4E] font-bold">{todayPosition}</Text>
+                      )}
+
+                      <Text className="text-[#3F72AF] text-lg font-bold">{todaySchedule}</Text>
+                  </Text>
                 </View>
               </View>
 
@@ -110,10 +229,10 @@ const Index = () => {
                 </View>
 
                 <View className="w-full mt-2">
-                  <Text className="text-[#112D4E] font-semibold">Clocked out</Text>
+                  <Text className="text-[#112D4E] font-semibold">{isClockedIn ? 'Clocked In' : 'Clocked Out'}</Text>
                   <TouchableOpacity className="bg-[#3F72AF] py-2 px-0 rounded-full mt-2">
                     <Link className="inline-block flex items-center justify-center" href="/_WorkingHours">
-                      <Text className="text-white font-semibold items-end text-center text-sm">Clock In</Text>
+                      <Text className="text-white font-semibold items-end text-center text-sm">{isClockedIn ? 'Clock Out' : 'Clock In'}</Text>
                     </Link>
                   </TouchableOpacity>
                 </View>

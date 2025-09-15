@@ -2,7 +2,7 @@ import { View, Text, Image, TouchableOpacity, ScrollView, Alert, ActivityIndicat
 import React, { useState, useCallback } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import images from '@constants/images'; // image path
+import images from '@constants/images'; 
 import { useFocusEffect } from 'expo-router';
 import axios from 'axios';
 import { useAuth } from '../../../context/AuthContext';
@@ -17,7 +17,7 @@ interface UserInfo {
   retailNumber: string;
   role: string;
   province: string;
-  createdAt: string; // 'hired' 날짜로 사용될 필드
+  createdAt: string; 
   manager?: {
     username: string;
   }
@@ -25,7 +25,7 @@ interface UserInfo {
 }
 
 const myInfo = () => {
-  const { token } = useAuth(); // AuthContext에서 토큰을 가져옵니다.
+  const { token } = useAuth();
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
