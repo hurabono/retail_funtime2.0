@@ -278,7 +278,7 @@ const MyRequest = () => {
           <View className="mt-6">
             {requests
               .filter((req) => req.status?.toLowerCase() === filter.toLowerCase())
-              .filter((req) => !req.employeeDelete) // 👈 숨김 처리된 요청 제외
+              .filter((req) => !req.employeeDelete) // 숨김 처리된 요청 제외
               .map((req) => (
                 <View key={req._id} className="bg-white p-4 rounded-lg shadow-md mb-4 border-4 border-[#3F72AF]">
                   <Text className="text-[#3F72AF] font-bold">
@@ -289,14 +289,18 @@ const MyRequest = () => {
                   <Text className="text-gray-500">Submitted: {formatSubmittedDate(req.submittedAt)}</Text>
                   <Text className="text-gray-500">Status: {req.status}</Text>
 
-                  <TouchableOpacity
-                    className="bg-red-600 px-4 py-2 rounded-lg mt-3"
-                    onPress={() => deleteMyLeaveRequest(req._id)}
-                  >
-                    <Text className="text-white font-bold text-center">Delete</Text>
-                  </TouchableOpacity>
+                  {/* pending이 아니면 Delete 버튼 렌더링 */}
+                  {req.status.toLowerCase() !== 'pending' && (
+                    <TouchableOpacity
+                      className="bg-red-600 px-4 py-2 rounded-lg mt-3"
+                      onPress={() => deleteMyLeaveRequest(req._id)}
+                    >
+                      <Text className="text-white font-bold text-center">Delete</Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
             ))}
+
           </View>
         </ScrollView>
       </SafeAreaView>
