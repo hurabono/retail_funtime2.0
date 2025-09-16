@@ -18,17 +18,23 @@ interface UserData {
   timeLogs: TimeLog[];
 }
 
+interface PayPeriod {
+  start: Date;
+  end: Date;
+  totalHours: number;
+  grossPay: number;
+  tax: number;
+  netPay: number;
+}
+
 const Payment = () => {
   const { token } = useAuth();
   const [user, setUser] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [totalHours, setTotalHours] = useState(0);
-  const [grossPay, setGrossPay] = useState(0);
-  const [netPay, setNetPay] = useState(0);
-  const [tax, setTax] = useState(0);
+  const [currentPay, setCurrentPay] = useState<PayPeriod | null>(null);
+  const [payHistory, setPayHistory] = useState<PayPeriod[]>([]);
   const [nextPayDate, setNextPayDate] = useState<string>("");
 
-  // 유저 정보 & timeLogs 불러오기
   const fetchUserData = async () => {
     try {
       const { data } = await axios.get(`${API_URL}/me`, {
@@ -39,8 +45,7 @@ const Payment = () => {
         hourlyWage: data.hourlyWage,
         timeLogs: data.timeLogs || [],
       });
-
-      calculatePayroll(data.hourlyWage, data.timeLogs || []);
+      calculatePayrolls(data.hourlyWage, data.timeLogs || []);
     } catch (err) {
       console.error("❌ 유저 데이터 불러오기 실패:", err);
     } finally {
@@ -48,36 +53,57 @@ const Payment = () => {
     }
   };
 
-  // 2주 급여 계산
-  const calculatePayroll = (hourlyWage: number, logs: TimeLog[]) => {
+  // 2주 단위 급여 계산 + 1년치 리스트 유지
+  const calculatePayrolls = (hourlyWage: number, logs: TimeLog[]) => {
     const now = new Date();
-    const twoWeeksAgo = new Date();
-    twoWeeksAgo.setDate(now.getDate() - 14);
+    const oneYearAgo = new Date();
+    oneYearAgo.setFullYear(now.getFullYear() - 1);
 
-    let total = 0;
+    // 1년 내 로그만 필터
+    const filteredLogs = logs.filter((log) => log.clockOut && new Date(log.clockIn) >= oneYearAgo);
 
-    logs.forEach((log) => {
-      if (!log.clockOut) return;
-      const start = new Date(log.clockIn);
-      const end = new Date(log.clockOut);
-      if (start >= twoWeeksAgo && end <= now) {
-        total += (end.getTime() - start.getTime()) / 3600000; // ms → 시간
-      }
-    });
+    // 2주 단위 pay periods
+    const payPeriods: PayPeriod[] = [];
+    let periodStart = new Date(filteredLogs[0]?.clockIn || oneYearAgo);
 
-    const gross = total * hourlyWage;
-    const taxAmount = gross * 0.15; // 단순 세율 15%
-    const net = gross - taxAmount;
+    // periodStart를 2주 단위 기준으로 조정
+    const dayOffset = periodStart.getDay() % 14; // 0~13
+    periodStart.setDate(periodStart.getDate() - dayOffset);
 
-    setTotalHours(total);
-    setGrossPay(gross);
-    setTax(taxAmount);
-    setNetPay(net);
+    while (periodStart < now) {
+      const periodEnd = new Date(periodStart);
+      periodEnd.setDate(periodEnd.getDate() + 14);
 
-    // 다음 급여일: 오늘 기준 +14일
-    const nextPay = new Date();
-    nextPay.setDate(now.getDate() + (14 - (now.getDate() % 14)));
-    setNextPayDate(nextPay.toDateString());
+      let totalHours = 0;
+      filteredLogs.forEach((log) => {
+        const start = new Date(log.clockIn);
+        const end = new Date(log.clockOut!);
+        if (start >= periodStart && end <= periodEnd) {
+          totalHours += (end.getTime() - start.getTime()) / 3600000;
+        }
+      });
+
+      const gross = totalHours * hourlyWage;
+      const tax = gross * 0.15;
+      const net = gross - tax;
+
+      payPeriods.push({
+        start: new Date(periodStart),
+        end: new Date(periodEnd),
+        totalHours,
+        grossPay: gross,
+        tax,
+        netPay: net,
+      });
+
+      periodStart.setDate(periodStart.getDate() + 14);
+    }
+
+    // 최신 period를 currentPay, 나머지는 payHistory
+    const latestPay = payPeriods.pop() || null;
+    setCurrentPay(latestPay);
+    setPayHistory(payPeriods);
+    if (latestPay) setNextPayDate(latestPay.end.toDateString());
   };
 
   useEffect(() => {
@@ -104,11 +130,10 @@ const Payment = () => {
           {/* My Balances */}
           <View className="mt-6">
             <Text className="text-white text-xl font-bold">My balances</Text>
-
             <View className="flex-row justify-between mt-3">
               <View className="border border-white rounded-lg p-4 w-[48%]">
                 <Text className="text-gray-300 text-sm">Working hours</Text>
-                <Text className="text-white text-2xl font-bold">{totalHours.toFixed(2)} hrs</Text>
+                <Text className="text-white text-2xl font-bold">{currentPay?.totalHours.toFixed(2)} hrs</Text>
               </View>
 
               <View className="border border-white rounded-lg p-4 w-[48%]">
@@ -125,28 +150,55 @@ const Payment = () => {
 
           {/* Current Paycheck */}
           <Text className="text-white text-xl font-bold mt-6">• Current paycheck</Text>
+          {currentPay && (
+            <View className="bg-white p-4 mt-4 rounded-xl shadow-lg border-4 border-[#3F72AF]">
+              <Text className="text-gray-500 font-bold">
+                Pay Period: {currentPay.start.toDateString()} - {currentPay.end.toDateString()}
+              </Text>
+              <View className="mt-2">
+                <Text className="text-gray-500">
+                  — Total working hours <Text className="text-black font-bold">{currentPay.totalHours.toFixed(2)} hrs</Text>
+                </Text>
+                <Text className="text-gray-500">
+                  — Wage per hour <Text className="text-black font-bold">${user?.hourlyWage.toFixed(2)}</Text>
+                </Text>
+                <Text className="text-gray-500">
+                  — Gross Pay <Text className="text-black font-bold">${currentPay.grossPay.toFixed(2)}</Text>
+                </Text>
+                <Text className="text-gray-500">
+                  — Taxes (15%) <Text className="text-black font-bold">-${currentPay.tax.toFixed(2)}</Text>
+                </Text>
+              </View>
 
-          <View className="bg-white p-4 mt-4 rounded-xl shadow-lg border-4 border-[#3F72AF]">
-            <Text className="text-gray-500 font-bold">Pay Period: Last 2 Weeks</Text>
-            <View className="mt-2">
-              <Text className="text-gray-500">
-                — Total working hours <Text className="text-black font-bold">{totalHours.toFixed(2)} hrs</Text>
-              </Text>
-              <Text className="text-gray-500">
-                — Wage per hour <Text className="text-black font-bold">${user?.hourlyWage.toFixed(2)}</Text>
-              </Text>
-              <Text className="text-gray-500">
-                — Gross Pay <Text className="text-black font-bold">${grossPay.toFixed(2)}</Text>
-              </Text>
-              <Text className="text-gray-500">
-                — Taxes (15%) <Text className="text-black font-bold">-${tax.toFixed(2)}</Text>
+              <Text className="text-[#3F72AF] text-lg font-bold mt-3 text-right">
+                Net Pay ${currentPay.netPay.toFixed(2)}
               </Text>
             </View>
+          )}
 
-            <Text className="text-[#3F72AF] text-lg font-bold mt-3 text-right">
-              Net Pay ${netPay.toFixed(2)}
-            </Text>
-          </View>
+          {/* Previous Paychecks (1년치) */}
+          <Text className="text-white text-xl font-bold mt-6">• Previous paychecks (last 1 year)</Text>
+          {payHistory.reverse().map((pay, idx) => (
+            <View key={idx} className="bg-white p-4 mt-4 rounded-xl shadow-lg border-4 border-[#3F72AF]">
+              <Text className="text-gray-500 font-bold">
+                Pay Period: {pay.start.toDateString()} - {pay.end.toDateString()}
+              </Text>
+              <View className="mt-2">
+                <Text className="text-gray-500">
+                  — Total working hours <Text className="text-black font-bold">{pay.totalHours.toFixed(2)} hrs</Text>
+                </Text>
+                <Text className="text-gray-500">
+                  — Gross Pay <Text className="text-black font-bold">${pay.grossPay.toFixed(2)}</Text>
+                </Text>
+                <Text className="text-gray-500">
+                  — Taxes (15%) <Text className="text-black font-bold">-${pay.tax.toFixed(2)}</Text>
+                </Text>
+                <Text className="text-[#3F72AF] text-lg font-bold mt-3 text-right">
+                  Net Pay ${pay.netPay.toFixed(2)}
+                </Text>
+              </View>
+            </View>
+          ))}
         </ScrollView>
       </SafeAreaView>
     </LinearGradient>

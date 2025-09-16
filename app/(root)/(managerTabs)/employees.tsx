@@ -22,6 +22,7 @@ interface Employee {
 const Employees = () => {
   const { token } = useAuth();
   
+  const [manager, setManager] = useState<Employee | null>(null); // 🔹 매니저 정보 상태 추가
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
@@ -30,7 +31,6 @@ const Employees = () => {
   // ✅ editForm에 address 추가
   const [editForm, setEditForm] = useState({ retailNumber: '', hourlyWage: '', address: '' });
   
-
   const fetchEmployees = async () => {
     if (!token) {
       setLoading(false);
@@ -38,10 +38,26 @@ const Employees = () => {
     }
     try {
       setLoading(true);
-      const { data } = await axios.get(`${API_URL}/employees`, {
+
+      // 🔹 매니저 본인 정보 가져오기
+      const { data } = await axios.get(`${API_URL}/me`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setEmployees(data);
+      setManager({
+        _id: data._id,
+        username: data.username,
+        employeeNumber: data.employeeNumber,
+        retailNumber: data.retailNumber || '',
+        hourlyWage: data.hourlyWage,
+        address: data.address || ''
+      });
+
+      // 🔹 직원들 정보 가져오기
+      const { data: empData } = await axios.get(`${API_URL}/employees`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setEmployees(empData);
+
     } catch (error) {
       console.error(error);
       Alert.alert('Error', 'Failed to fetch employees.');
@@ -58,7 +74,6 @@ const Employees = () => {
 
   const handleSelectEmployee = (employee: Employee) => {
     setSelectedEmployee(employee);
-    // ✅ 직원 선택 시 address 포함
     setEditForm({
       retailNumber: employee.retailNumber || '',
       hourlyWage: employee.hourlyWage.toString(),
@@ -68,8 +83,6 @@ const Employees = () => {
   };
 
   const handleUpdateEmployee = async () => {
-
-    
     if (!selectedEmployee) return;
 
     try {
@@ -85,10 +98,8 @@ const Employees = () => {
         }
       );
 
-      // ✅ 업데이트 후 목록 새로고침
       await fetchEmployees();
 
-      // ✅ state 즉시 반영
       setEmployees(prev =>
         prev.map(emp => (emp._id === data._id ? { ...emp, ...data } : emp))
       );
@@ -102,8 +113,6 @@ const Employees = () => {
     }
   };
 
-  
-
   if (loading) {
     return (
       <LinearGradient
@@ -115,8 +124,6 @@ const Employees = () => {
     );
   }
 
-  
-
   const renderItem = ({ item }: { item: Employee }) => (
     <TouchableOpacity onPress={() => handleSelectEmployee(item)}>
       <View className="bg-white rounded-xl p-5 mb-4 shadow-md border-4 border-[#3F72AF]">
@@ -124,8 +131,7 @@ const Employees = () => {
         <Text className="text-gray-500 mt-1">Employee #: {item.employeeNumber}</Text>
         <Text className="text-gray-500 mt-1">Retail #: {item.retailNumber || 'N/A'}</Text>
         <Text className="text-gray-500 mt-1">Hourly Wage: ${item.hourlyWage.toFixed(2)}</Text>
-        <Text className="text-gray-500 mt-1">Address: {item.address || 'N/A'}</Text> 
-        {/* ✅ 직원 카드에 address 표시 */}
+        <Text className="text-gray-500 mt-1">Address: {item.address || 'N/A'}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -135,6 +141,24 @@ const Employees = () => {
       <SafeAreaView className="mt-5" style={{ flex: 1 }}>
         <View className="px-5">
           <Text className="text-white text-3xl font-bold text-center my-6">My Employees</Text>
+
+          {/* 🔹 Manager 고정 카드 */}
+          <Text className="text-white text-xl font-bold mb-2">🔹 Manager</Text>
+          {manager && (
+            <TouchableOpacity onPress={() => handleSelectEmployee(manager)}>
+              <View className="bg-white rounded-xl p-5 mb-4 shadow-md border-4 border-[#3F72AF]">
+                <Text className="text-[#112D4E] text-lg font-bold">{manager.username}</Text>
+                <Text className="text-gray-500 mt-1">Employee #: {manager.employeeNumber}</Text>
+                <Text className="text-gray-500 mt-1">Retail #: {manager.retailNumber || 'N/A'}</Text>
+                <Text className="text-gray-500 mt-1">Hourly Wage: ${manager.hourlyWage.toFixed(2)}</Text>
+                <Text className="text-gray-500 mt-1">Address: {manager.address || 'N/A'}</Text>
+              </View>
+            </TouchableOpacity>
+          )}
+
+          {/* 🔹 Employees 타이틀 */}
+          <Text className="text-white text-xl font-bold mb-2 mt-4">🔹 Employees</Text>
+
           {employees.length === 0 ? (
             <Text className="text-white text-center text-lg mt-10">
               No employees assigned to you.
@@ -150,6 +174,7 @@ const Employees = () => {
           )}
         </View>
 
+        {/* 모달 (편집 기능 동일) */}
         <Modal
           animationType="slide"
           transparent={true}
@@ -180,7 +205,6 @@ const Employees = () => {
                   onChangeText={text => setEditForm(prev => ({ ...prev, hourlyWage: text }))}
                 />
 
-                {/* ✅ 주소 입력 필드 추가 */}
                 <Text className="text-gray-500 mb-1">Store Address</Text>
                 <TextInput
                   className="w-full border border-gray-300 p-3 rounded-lg mb-6"

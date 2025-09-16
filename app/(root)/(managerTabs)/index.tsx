@@ -95,7 +95,7 @@ const Index = () => {
                 <View className="mt-2">
                   <Text className="text-[#112D4E] font-semibold ml-2">Week42</Text>
                   <TouchableOpacity className="bg-[#3F72AF] py-2 px-0 rounded-full mt-2">
-                    <Link className="inline-block flex items-center justify-center" href="/">
+                    <Link className="inline-block flex items-center justify-center" href="/AnnouncementManagerScreen">
                       <Text className="text-white font-semibold items-end text-center text-sm">Announcement</Text>
                     </Link>
                   </TouchableOpacity>
@@ -165,8 +165,8 @@ const Index = () => {
 
               <TouchableOpacity className="items-center">
                 <Image source={images.paymentIcon} style={{ width: 100, }} resizeMode="contain" />
-                <Text className="text-[#3F72AF]  font-semibold text-xs mt-2">View My</Text>
-                <Link href="/payment">
+                <Text className="text-[#3F72AF]  font-semibold text-xs mt-2">Team Members</Text>
+                <Link href="/ManagerPayments">
                   <Text className="text-[#3F72AF]  font-semibold text-base">Payment</Text>
                 </Link>
               </TouchableOpacity>

@@ -1,24 +1,21 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react"; 
 import { View, Text, Image, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
-import { Link } from "expo-router";
+import { Link, useFocusEffect } from "expo-router"; 
 import images from '@constants/images';
 import { useAuth } from '../../../context/AuthContext';
 import axios from "axios";
 
 const API_URL = 'http://localhost:4000/api/auth';
 
-
-// setting interface for Announcement
+// Interfaces (no changes)
 interface Announcement {
   _id: string;
   title: string;
   createdAt?: string;
 }
 
-
-// setting interface for user inforamtion
 interface Schedule {
   date: string;
   startTime: string;
@@ -34,7 +31,6 @@ interface TimeLog {
   breakEnd?: string;
 }
 
-
 interface UserInfo {
   _id: string;
   username: string;
@@ -44,7 +40,7 @@ interface UserInfo {
   retailNumber: string;
   role: string;
   province: string;
-  createdAt: string; 
+  createdAt: string;
   manager?: {
   username: string;
 }
@@ -63,9 +59,6 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
   const [todayPosition, setTodayPosition] = useState<string>("");
 
-
-
-  // logout handling
   const handleLogout = async () => {
     try {
       await logout();
@@ -74,8 +67,8 @@ const Index = () => {
     }
   };
 
-  // 사용자 정보 우선 가져오기
-   const fetchMyInfo = async () => {
+  const fetchMyInfo = async () => {
+    if (!token) return; // 토큰이 없으면 실행하지 않음
     try {
       setLoading(true);
       const { data } = await axios.get('http://localhost:4000/api/auth/me', {
@@ -90,7 +83,6 @@ const Index = () => {
     }
   };
 
-  // 최신 공지 가져오기
   const fetchLatestAnnouncement = async () => {
     if (!token) return;
     try {
@@ -108,27 +100,19 @@ const Index = () => {
     }
   };
 
-  useEffect(() => {
-    fetchLatestAnnouncement();
-  }, [token]);
-
-  useEffect(() => {
+  // 3. ✨ This is the key change. This hook runs whenever the screen comes into focus.
+  useFocusEffect(
+    useCallback(() => {
       fetchMyInfo();
-    }, []);
-  
+      fetchLatestAnnouncement();
+    }, [token]) // Re-run if the token changes
+  );
 
-
-  // calculate today's date for checking schedule
-  const today = new Date();
-  const formattedDate = today.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-
-  // 오늘 스케줄과 근무주 계산
+  // The rest of your useEffect for calculations remains the same, as it depends on `userInfo`
   useEffect(() => {
-    //상세 정보가 있는 userInfo 객체로 변경
-   if (userInfo) {
-
-       // week 계산 (Created At)
-       //userInfo 객체의 정보 사용
+    if (userInfo) {
+      const today = new Date();
+      // week 계산
       if (userInfo.createdAt) {
         const start = new Date(userInfo.createdAt);
         const diffWeeks = Math.ceil(((today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) / 7);
@@ -136,37 +120,46 @@ const Index = () => {
       }
 
       // 오늘 스케줄 찾기
-      if (userInfo.schedules && userInfo.schedules.length > 0) { 
-        // 타입을 any 대신 Schedule로 지정
+      if (userInfo.schedules && userInfo.schedules.length > 0) {
         const todayShift = userInfo.schedules.find((s: Schedule) => {
           const d = new Date(s.date);
           return d.getFullYear() === today.getFullYear() &&
-                d.getMonth() === today.getMonth() &&
-                d.getDate() === today.getDate();
+                 d.getMonth() === today.getMonth() &&
+                 d.getDate() === today.getDate();
         });
         if (todayShift) {
           setTodaySchedule(`${todayShift.startTime} - ${todayShift.endTime}`);
           setTodayPosition(todayShift.position);
         } else {
           setTodaySchedule("NO SCHEDULE");
-          setTodayPosition(""); 
+          setTodayPosition("");
         }
       }
 
       // Clocked in/out 상태
       if (userInfo.timeLogs && userInfo.timeLogs.length > 0) {
         const lastLog = userInfo.timeLogs[userInfo.timeLogs.length - 1];
-        setIsClockedIn(!!lastLog.clockIn && !lastLog.clockOut);
+        // Check if lastLog exists before trying to access its properties
+        if (lastLog) {
+            setIsClockedIn(!!lastLog.clockIn && !lastLog.clockOut);
+        } else {
+            setIsClockedIn(false);
+        }
+      } else {
+        setIsClockedIn(false);
       }
-  }
-}, [userInfo]);
+    }
+  }, [userInfo]);
 
+  const today = new Date();
+  const formattedDate = today.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
+  // Your JSX remains exactly the same.
   return (
     <LinearGradient colors={["#112D4E", "#8199B6"]} className="flex-1">
       <SafeAreaView style={{ flex: 1 }} className="flex-1 mt-10">
         <ScrollView contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 20, paddingBottom: 100 }}>
-          
+
           {/* Header Section */}
           <View className="flex-row justify-between items-center mt-5">
             <View>
@@ -186,13 +179,13 @@ const Index = () => {
           {/* Announcement Bar */}
           <View className="bg-white rounded-full px-4 py-2 mt-3 flex-row justify-center items-center">
             <Image source={images.approval} style={{ width: 30 }} resizeMode="contain" />
-             <Link href={"/AnnouncementListScreen"}>
-              <Text className="text-gray-600 font-semibold ml-2">
-                {latestAnnouncement
-                  ? `${latestAnnouncement.title} - ${new Date(latestAnnouncement.createdAt || "").toLocaleDateString()}`
-                  : "No announcement today"}
-              </Text>
-             </Link>
+              <Link href={"/AnnouncementListScreen"}>
+                <Text className="text-gray-600 font-semibold ml-2">
+                  {latestAnnouncement
+                    ? `${latestAnnouncement.title} - ${new Date(latestAnnouncement.createdAt || "").toLocaleDateString()}`
+                    : "No announcement today"}
+                </Text>
+              </Link>
           </View>
 
           {/* Rest of the employee screen */}

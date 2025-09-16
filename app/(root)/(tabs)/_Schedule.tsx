@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import axios from 'axios';
 import { useAuth } from '../../../context/AuthContext';
+import { Link } from 'expo-router';
 
 const API_URL = 'http://localhost:4000/api/auth';
 
@@ -64,10 +65,19 @@ const ScheduleScreen = () => {
 
   return (
     <LinearGradient colors={['#112D4E', '#8199B6']} className="flex-1">
-      <SafeAreaView className="flex-1 mt-5">
+      <SafeAreaView className="flex-1 mt-10" style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 20, paddingBottom:100 }}>
           {/* Header */}
-          <Text className="text-white text-3xl font-bold mt-5">My Schedule </Text>
+          {/* 상단 네비게이션 */}
+
+          <View className="flex-row justify-between border-b border-white pb-3">
+            <Link href="/_Schedule">
+              <Text className="text-white text-lg font-bold underline">My Schedule</Text>
+            </Link>
+            <Link href="/_MyRequest">
+              <Text className="text-white text-lg font-bold">My Request</Text>
+            </Link>
+          </View>
 
           {/* Week Selector */}
           <View className="mt-4 flex-row items-center">

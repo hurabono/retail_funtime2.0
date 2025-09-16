@@ -6,54 +6,78 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const API_URL = "http://localhost:4000/api/auth";
 
-interface TimeLog {
-  clockIn?: string;
-  clockOut?: string;
-  breakStart?: string;
-  breakEnd?: string;
-}
+  interface TimeLog {
+    clockIn?: string;
+    clockOut?: string;
+    breakStart?: string;
+    breakEnd?: string;
+  }
 
-interface Employee {
-  _id: string;
-  username: string;
-  employeeNumber: string;
-  hourlyWage: number;
-  timeLogs: TimeLog[];
-}
+  interface Employee {
+    _id: string;
+    username: string;
+    employeeNumber: string;
+    hourlyWage: number;
+    timeLogs: TimeLog[];
+  }
 
-const ManagerTimeLogs = () => {
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
-  const [modalVisible, setModalVisible] = useState(false);
+  const ManagerTimeLogs = () => {
+    const [employees, setEmployees] = useState<Employee[]>([]);
+    const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+    const [modalVisible, setModalVisible] = useState(false);
 
+  // ✅ 현재 2주 급여 주기 계산
+  const getCurrentPayPeriod = () => {
+    const today = new Date();
+    const start = new Date(today);
+    const end = new Date(today);
 
-  // ✅ 로그 합치기 함수 (clockIn만 있는 거 + clockOut만 있는 거 묶어줌)
+    // 이번 달 1~14일, 15~말일 기준으로 쪼갬
+    if (today.getDate() <= 14) {
+      start.setDate(1);
+      end.setDate(14);
+    } else {
+      start.setDate(15);
+      end.setMonth(today.getMonth() + 1, 0); // 이번 달 마지막 날
+    }
+
+    // 시간을 0시~23:59로 맞추기
+    start.setHours(0, 0, 0, 0);
+    end.setHours(23, 59, 59, 999);
+
+    return { start, end };
+  };
+
+  // ✅ 로그 합치기 + 2주 구간 필터링
   const mergeTimeLogs = (logs: TimeLog[]) => {
     const merged: TimeLog[] = [];
     let temp: TimeLog | null = null;
+    const { start, end } = getCurrentPayPeriod();
 
     logs.forEach((log) => {
+      const logDate = log.clockIn ? new Date(log.clockIn) : null;
+
+      // ✅ 급여 주기 범위 안에 없는 로그는 제외
+      if (logDate && (logDate < start || logDate > end)) {
+        return;
+      }
+
       if (log.clockIn && !log.clockOut) {
-        // 출근만 있는 경우 → 임시 저장
         temp = { clockIn: log.clockIn };
       } else if (!log.clockIn && log.clockOut && temp) {
-        // 이전에 출근만 있었고 지금 퇴근만 있으면 → 합치기
         temp.clockOut = log.clockOut;
         merged.push(temp);
         temp = null;
       } else {
-        // 이미 clockIn+clockOut이 있는 경우나 혼자 있는 경우
         merged.push(log);
       }
     });
 
-    // 만약 마지막에 clockIn만 있고 clockOut 없는 상태로 끝나면 ongoing으로 표시
     if (temp) merged.push(temp);
-
     return merged;
   };
 
-  // 안전한 날짜/시간 포맷터
+
   const formatDateSafe = (iso?: string) => {
     if (!iso) return "-";
     try {
@@ -77,20 +101,18 @@ const ManagerTimeLogs = () => {
     }
   };
 
-  // 총 근무시간 계산
   const calculateHours = (clockIn?: string, clockOut?: string) => {
     if (!clockIn || !clockOut) return "-";
     try {
       const start = new Date(clockIn);
       const end = new Date(clockOut);
-      const diff = (end.getTime() - start.getTime()) / 3600000; // ms → hr
+      const diff = (end.getTime() - start.getTime()) / 3600000;
       return `${diff.toFixed(2)} hrs`;
     } catch {
       return "-";
     }
   };
 
-  // 직원 목록 불러오기
   const fetchEmployees = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
@@ -105,7 +127,6 @@ const ManagerTimeLogs = () => {
 
       if (!res.ok) {
         const errData = await res.json();
-        console.error("❌ fetchEmployees error:", errData);
         Alert.alert("Error", errData.message || "Failed to load employees");
         return;
       }
@@ -118,7 +139,6 @@ const ManagerTimeLogs = () => {
     }
   };
 
-  // 직원 상세 불러오기
   const fetchEmployeeDetail = async (employeeId: string) => {
     try {
       const token = await AsyncStorage.getItem("token");
@@ -135,7 +155,6 @@ const ManagerTimeLogs = () => {
       }
 
       const data = await res.json();
-      // ✅ 여기서 timeLogs 합쳐줌
       data.timeLogs = mergeTimeLogs(data.timeLogs || []);
       setSelectedEmployee(data);
       setModalVisible(true);
@@ -149,7 +168,7 @@ const ManagerTimeLogs = () => {
   }, []);
 
   return (
-     <LinearGradient colors={["#112D4E", "#8199B6"]} className="flex-1">
+    <LinearGradient colors={["#112D4E", "#8199B6"]} className="flex-1">
       <SafeAreaView className="flex-1 mt-10">
         <ScrollView
           contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 20, paddingBottom: 100 }}
@@ -176,7 +195,7 @@ const ManagerTimeLogs = () => {
             ))}
           </View>
 
-          {/* ✅ Modal */}
+          {/* ✅ Modal with Scroll */}
           <Modal
             animationType="slide"
             transparent={true}
@@ -184,33 +203,33 @@ const ManagerTimeLogs = () => {
             onRequestClose={() => setModalVisible(false)}
           >
             <View className="flex-1 justify-center items-center bg-black/50">
-              <View className="bg-white w-[90%] p-5 rounded-lg shadow-lg">
+              <View className="bg-white w-[90%] h-[70%] p-5 rounded-lg shadow-lg">
                 <Text className="text-blue-900 font-bold text-xl mb-4">
                   📊 {selectedEmployee?.username} - Time Logs
                 </Text>
 
-                {selectedEmployee?.timeLogs.length === 0 ? (
-                  <Text className="text-gray-600">No logs available</Text>
-                ) : (
-                  selectedEmployee?.timeLogs.map((log, idx) => (
-                    <View
-                      key={idx}
-                      className="bg-white p-4 rounded-lg shadow-md mb-3 border-2 border-blue-900"
-                    >
-                      <Text className="text-gray-500">📅 {formatDateSafe(log.clockIn)}</Text>
-                      <Text className="text-blue-900 font-bold">
-                        ⏰ {formatTimeSafe(log.clockIn)} -{" "}
-                        {log.clockOut ? formatTimeSafe(log.clockOut) : "Ongoing"}
-                      </Text>
-                      <Text className="text-gray-600">
-                        • Total Hours:{" "}
-                        {log.clockOut
-                          ? calculateHours(log.clockIn, log.clockOut)
-                          : "In progress"}
-                      </Text>
-                    </View>
-                  ))
-                )}
+                <ScrollView>
+                  {selectedEmployee?.timeLogs.length === 0 ? (
+                    <Text className="text-gray-600">No logs available</Text>
+                  ) : (
+                    selectedEmployee?.timeLogs.map((log, idx) => (
+                      <View
+                        key={idx}
+                        className="bg-white p-4 rounded-lg shadow-md mb-3 border-2 border-blue-900"
+                      >
+                        <Text className="text-gray-500">📅 {formatDateSafe(log.clockIn)}</Text>
+                        <Text className="text-blue-900 font-bold">
+                          ⏰ {formatTimeSafe(log.clockIn)} -{" "}
+                          {log.clockOut ? formatTimeSafe(log.clockOut) : "Ongoing"}
+                        </Text>
+                        <Text className="text-gray-600">
+                          • Total Hours:{" "}
+                          {log.clockOut ? calculateHours(log.clockIn, log.clockOut) : "In progress"}
+                        </Text>
+                      </View>
+                    ))
+                  )}
+                </ScrollView>
 
                 <Pressable
                   className="bg-blue-900 mt-4 py-2 rounded"
