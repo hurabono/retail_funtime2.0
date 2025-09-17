@@ -1,9 +1,11 @@
-import { View, Text, TouchableOpacity, ScrollView, Alert } from 'react-native';
-import React, { useEffect, useState, useRef } from 'react';
+import { View, Text,  Image, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import axios from 'axios';
+import { useFocusEffect } from "expo-router"; 
 import { useAuth } from '../../../context/AuthContext';
+import images from '@constants/images';
 
 const API_URL = 'http://localhost:4000/api/auth';
 
@@ -13,6 +15,30 @@ interface TimeLog {
   clockOut?: string;
 }
 
+
+interface Announcement {
+  _id: string;
+  title: string;
+  createdAt?: string;
+}
+
+interface UserInfo {
+  _id: string;
+  username: string;
+  employeeNumber: string;
+  storeNumber: string;
+  hourlyWage: number;
+  retailNumber: string;
+  role: string;
+  province: string;
+  createdAt: string;
+  manager?: {
+  username: string;
+}
+}
+
+
+
 const WorkingHours = () => {
   const { token } = useAuth();
   const [timeLogs, setTimeLogs] = useState<TimeLog[]>([]);
@@ -20,6 +46,29 @@ const WorkingHours = () => {
   const [todaySeconds, setTodaySeconds] = useState(0);
   const [weekSeconds, setWeekSeconds] = useState(0);
   const intervalRef = useRef<number | null>(null);
+  const [latestAnnouncement, setLatestAnnouncement] = useState<Announcement | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+
+
+
+  // 유저정보 패치
+  const fetchMyInfo = async () => {
+    if (!token) return;
+    try {
+      setLoading(true);
+      const { data } = await axios.get('http://localhost:4000/api/auth/me', {
+          headers: { Authorization: `Bearer ${token}` }
+      });
+      setUserInfo(data);
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', 'Failed to fetch user information.');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
 
   // DB에서 기존 시간 기록 불러오기
   const fetchTimeLogs = async () => {
@@ -146,21 +195,55 @@ const WorkingHours = () => {
   const oneWeekAgo = new Date();
   oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
+
+  // 최신 공지 가져오기
+  const fetchLatestAnnouncement = async () => {
+    if (!token) return;
+    try {
+      const { data } = await axios.get(`${API_URL}/announcements`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (data.length > 0) {
+        const sorted = data.sort((a: Announcement, b: Announcement) =>
+          new Date(b.createdAt || "").getTime() - new Date(a.createdAt || "").getTime()
+        );
+        setLatestAnnouncement(sorted[0]);
+      }
+    } catch (error: any) {
+      console.error("❌ Fetch latest announcement error:", error.response || error.message);
+    }
+  };
+
+  // This is the key change. This hook runs whenever the screen comes into focus.
+    useFocusEffect(
+      useCallback(() => {
+        fetchMyInfo();
+        fetchLatestAnnouncement();
+      }, [token])
+    );
+
+
+
   return (
     <LinearGradient colors={['#112D4E', '#8199B6']} className="flex-1">
       <SafeAreaView className="flex-1 mt-5">
         <ScrollView contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 20, paddingBottom: 100 }}>
           {/* Store Name */}
           <View className="mt-6 flex-row justify-between items-center">
-            <Text className="text-white text-xl font-bold">🏪 <Text className="underline">Store3064</Text></Text>
+            <Text className="text-white text-xl font-bold"><Text className="underline">🏪 Store{userInfo?.storeNumber}</Text></Text>
           </View>
 
           {/* Header */}
           <Text className="text-white text-3xl font-bold mt-5">Working hours</Text>
 
-          {/* Meeting Notification */}
-          <View className="mt-4 bg-white rounded-full py-2 px-4 flex-row items-center">
-            <Text className="text-[#3F72AF] font-semibold text-xs ">⚠️ Team meeting scheduled 10am ~ 11am | Nov 15 / 2024</Text>
+          {/* Announcement Bar */}
+          <View className="bg-white rounded-full px-4 py-2 mt-3 flex-row justify-center items-center">
+            <Image source={images.approval} style={{ width: 30 }} resizeMode="contain" />
+            <Text className="text-gray-600 font-semibold ml-2">
+              {latestAnnouncement
+                ? `${latestAnnouncement.title} - ${new Date(latestAnnouncement.createdAt || "").toLocaleDateString()}`
+                : "No announcement today"}
+            </Text>
           </View>
 
           {/* Clock In Section */}

@@ -68,7 +68,7 @@ const Index = () => {
   };
 
   const fetchMyInfo = async () => {
-    if (!token) return; // 토큰이 없으면 실행하지 않음
+    if (!token) return;
     try {
       setLoading(true);
       const { data } = await axios.get('http://localhost:4000/api/auth/me', {
@@ -100,12 +100,12 @@ const Index = () => {
     }
   };
 
-  // 3. ✨ This is the key change. This hook runs whenever the screen comes into focus.
+  // This is the key change. This hook runs whenever the screen comes into focus.
   useFocusEffect(
     useCallback(() => {
       fetchMyInfo();
       fetchLatestAnnouncement();
-    }, [token]) // Re-run if the token changes
+    }, [token])
   );
 
   // The rest of your useEffect for calculations remains the same, as it depends on `userInfo`
@@ -154,7 +154,7 @@ const Index = () => {
   const today = new Date();
   const formattedDate = today.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
-  // Your JSX remains exactly the same.
+  
   return (
     <LinearGradient colors={["#112D4E", "#8199B6"]} className="flex-1">
       <SafeAreaView style={{ flex: 1 }} className="flex-1 mt-10">
