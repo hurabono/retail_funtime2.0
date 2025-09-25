@@ -4,6 +4,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { useAuth } from "../../../context/AuthContext";
 import axios from "axios";
+import { AppText } from "../../../components/AppText";
+
 
 const API_URL = 'http://localhost:4000/api/auth';
 
@@ -96,13 +98,13 @@ const AnnouncementManagerScreen = () => {
         <ScrollView contentContainerStyle={{ paddingBottom: 100 }} className="px-5">
           {/* Header */}
           <View className="mb-6">
-            <Text className="text-white text-2xl font-bold">📢 Manage Announcements</Text>
-            <Text className="text-gray-200 mt-1 text-sm">Hello, Manager!</Text>
+            <AppText className="text-white text-2xl font-bold text-center my-6 tracking-wider"> Manage Announcements</AppText>
+            <AppText className="text-gray-200 mt-1 text-sm text-center">Hello, Manager!</AppText>
           </View>
 
           {/* Form */}
           <View className="bg-white rounded-xl px-4 py-5 shadow-lg border-4 border-[#3F72AF] mb-6">
-            <Text className="text-[#112D4E] font-bold mb-2">Title</Text>
+            <AppText className="text-[#112D4E] font-bold mb-2 tracking-wider">Title</AppText>
             <TextInput
               value={title}
               onChangeText={setTitle}
@@ -110,7 +112,7 @@ const AnnouncementManagerScreen = () => {
               className="border border-gray-300 rounded-lg p-2 mb-4"
             />
 
-            <Text className="text-[#112D4E] font-bold mb-2">Content</Text>
+            <AppText className="text-[#112D4E] font-bold mb-2 tracking-wider">Content</AppText>
             <TextInput
               value={content}
               onChangeText={setContent}
@@ -124,7 +126,7 @@ const AnnouncementManagerScreen = () => {
               onPress={handlePost}
               className="bg-[#3F72AF] py-3 rounded-lg mt-2"
             >
-              <Text className="text-white text-center font-bold">Post Announcement</Text>
+              <AppText className="text-white text-center font-bold tracking-wider">Post Announcement</AppText>
             </TouchableOpacity>
           </View>
 
@@ -132,13 +134,13 @@ const AnnouncementManagerScreen = () => {
           <View>
             {announcements.map(ann => (
                 <View key={ann._id ?? Math.random().toString()} className="bg-white rounded-xl p-4 mb-3 shadow-md border-2 border-[#3F72AF]">
-                    <Text className="text-[#112D4E] font-bold text-lg">{ann.title}</Text>
+                    <AppText className="text-[#112D4E] font-bold text-lg">{ann.title}</AppText>
                     <Text className="text-gray-500 mt-1">{ann.content}</Text>
                     <TouchableOpacity
                         onPress={() => handleDelete(ann._id)}
-                        className="bg-red-500 py-1 px-3 rounded-lg mt-2 self-end"
+                        className="bg-[#112D4E] py-1 px-3 rounded-lg mt-2 self-end"
                     >
-                        <Text className="text-white text-sm font-bold text-center">Delete</Text>
+                        <AppText className="text-white text-sm font-bold text-center">Delete</AppText>
                     </TouchableOpacity>
                 </View>
                 ))}

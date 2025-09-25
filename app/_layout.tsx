@@ -41,11 +41,11 @@ const InitialLayout = () => {
 // RootLayout은 AuthProvider로 전체 앱을 감싸는 역할만 합니다.
 export default function RootLayout() {
   const [fontsLoaded, error] = useFonts({
-    "Figtree-Regular": require("../assets/fonts/Figtree-Regular.ttf"),
-    "Figtree-Bold": require("../assets/fonts/Figtree-Bold.ttf"),
-    "Figtree-ExtraBold": require("../assets/fonts/Figtree-ExtraBold.ttf"),
-    "Figtree-Medium": require("../assets/fonts/Figtree-Medium.ttf"),
-    "Figtree-Light": require("../assets/fonts/Figtree-Light.ttf"),
+    "RobotoSlab-Regular": require("../assets/fonts/RobotoSlab-Regular.ttf"),
+    "RobotoSlab-Bold": require("../assets/fonts/RobotoSlab-Bold.ttf"),
+    "RobotoSlab-ExtraBold": require("../assets/fonts/RobotoSlab-ExtraBold.ttf"),
+    "RobotoSlab-Medium": require("../assets/fonts/RobotoSlab-Medium.ttf"),
+    "RobotoSlab-Light": require("../assets/fonts/RobotoSlab-Light.ttf"),
   });
 
   useEffect(() => {

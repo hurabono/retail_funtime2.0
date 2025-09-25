@@ -5,6 +5,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import axios from 'axios';
 import { useAuth } from '../../../context/AuthContext';
 import { Picker } from '@react-native-picker/picker';
+import { AppText } from "../../../components/AppText";
+
 
 const API_URL = 'http://localhost:4000/api/auth';
 
@@ -170,18 +172,18 @@ const ManagerSchedule = () => {
     <LinearGradient colors={['#112D4E','#8199B6']} className="flex-1">
       <SafeAreaView className="flex-1 mt-5">
         <ScrollView contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 20, paddingBottom: 100 }}>
-          <Text className="text-white text-3xl font-bold mt-5">Manager Schedule</Text>
+          <AppText className="text-white text-2xl font-bold text-center my-6 tracking-wider">Manager Schedule</AppText>
 
           {/* 🔹 매니저 본인 버튼 추가 */}
           {manager && (
             <TouchableOpacity onPress={() => setSelectedEmployee(manager._id)}>
               <View className="mt-4 bg-white rounded-lg p-2">
-                <Text className="text-[#3F72AF] font-bold text-center">{manager.username}</Text>
+                <AppText className="text-[#3F72AF] font-bold text-center">{manager.username}</AppText>
               </View>
             </TouchableOpacity>
           )}
 
-          <View className="mt-4 bg-white rounded-lg p-2">
+          <View className="mt-4 bg-white rounded-lg p-2 font-robotoSlabLight">
             <Picker selectedValue={selectedEmployee} onValueChange={(value) => { setSelectedEmployee(value); setEmployeeShifts({}); }}>
               <Picker.Item label="Select Employee" value="" />
               {employees.map(emp => <Picker.Item key={emp._id} label={emp.username} value={emp._id} />)}
@@ -192,13 +194,13 @@ const ManagerSchedule = () => {
           {selectedEmployee ? (
             <View className="flex-row items-center mt-2 mb-4">
               <Switch value={repeatShift} onValueChange={setRepeatShift} />
-              <Text className="ml-2 text-white font-bold">Repeat Shift Next Week</Text>
+              <AppText className="ml-2 text-white font-bold tracking-wider">Repeat Shift Next Week</AppText>
             </View>
           ) : null}
 
           <View className="mt-4 flex-row items-center">
             <View className="bg-white px-3 py-1 rounded-lg">
-              <Text className="text-[#3F72AF] font-bold text-sm">This Week</Text>
+              <AppText className="text-[#3F72AF] font-bold text-sm">This Week</AppText>
             </View>
             <View className="flex-row ml-4">
               {weekDates.map((d, idx) => <Text key={idx} className="text-white text-base mx-2">{formatDate(d)}</Text>)}
@@ -212,24 +214,24 @@ const ManagerSchedule = () => {
             return (
               <View key={index} className="bg-white rounded-xl px-5 py-3 mt-6 shadow-md border-4 border-[#3F72AF]">
                 <View className="absolute -top-4 left-2 bg-white px-3 py-1 rounded-lg shadow-md">
-                  <Text className="text-[#3F72AF] font-bold text-sm text-center">{formatWeekday(dayDate)}</Text>
-                  <Text className="text-black font-bold text-lg text-center">{formatDate(dayDate)}</Text>
+                  <AppText className="text-[#3F72AF] font-bold text-sm text-center">{formatWeekday(dayDate)}</AppText>
+                  <Text className="text-[#112D4E] font-bold text-lg text-center">{formatDate(dayDate)}</Text>
                 </View>
 
-                {shifts.length === 0 && <Text className="text-[#3F72AF] font-bold mt-[35px]">Not Scheduled</Text>}
+                {shifts.length === 0 && <AppText className="text-[#3F72AF] font-bold mt-[35px]">Not Scheduled</AppText>}
 
                 {shifts.map((s, idx) => (
                   <View key={idx} className="mt-2 bg-gray-100 p-2 rounded-lg -z-10 flex justify-center items-center">
-                    <Text className='text-[#3F72AF] font-bold'>{s.startTime} - {s.endTime} | {s.position} | {s.workHours.toFixed(2)} hrs</Text>
+                    <AppText className='text-[#3F72AF] font-bold mt-4'>{s.startTime} - {s.endTime} | {s.position} | {s.workHours.toFixed(2)} hrs</AppText>
                     {s.break && <Text>🍽 Break: {s.break}</Text>}
                     <TouchableOpacity onPress={() => deleteShift(dayDate.toDateString(), idx)}>
-                      <Text className="text-red-500 underline">Delete</Text>
+                      <AppText className="text-red-500 underline">Delete</AppText>
                     </TouchableOpacity>
                   </View>
                 ))}
 
                 <TouchableOpacity onPress={() => openShiftModal(dayDate)}>
-                  <Text className="text-[#3F72AF] font-bold underline mt-2">+ Add Shift</Text>
+                  <AppText className="text-[#3F72AF] font-bold underline mt-2">+ Add Shift</AppText>
                 </TouchableOpacity>
               </View>
             );
@@ -239,28 +241,28 @@ const ManagerSchedule = () => {
           <Modal visible={modalVisible} transparent animationType="slide">
             <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
               <View className="bg-white w-[90%] p-5 rounded-xl">
-                <Text className="text-lg font-bold mb-3">Add Shift</Text>
+                <AppText className="text-[#112D4E] text-lg font-bold mb-3">Add Shift</AppText>
 
-                <Text className="mb-1">Start Time</Text>
+                <Text className="mb-1 text-[#3F72AF]">Start Time</Text>
                 <View className="flex-row mb-2 justify-between">
                   <PickerBox value={startHour} onChange={setStartHour} labelArray={Array.from({length:12},(_,i)=>i+1)} />
                   <PickerBox value={startMinute} onChange={setStartMinute} labelArray={Array.from({length:60},(_,i)=>i)} />
                   <PickerBox value={startAMPM} onChange={setStartAMPM} labelArray={['AM','PM']} />
                 </View>
 
-                <Text className="mb-1">End Time</Text>
+                <Text className="mb-1 text-[#3F72AF]">End Time</Text>
                 <View className="flex-row mb-2 justify-between">
                   <PickerBox value={endHour} onChange={setEndHour} labelArray={Array.from({length:12},(_,i)=>i+1)} />
                   <PickerBox value={endMinute} onChange={setEndMinute} labelArray={Array.from({length:60},(_,i)=>i)} />
                   <PickerBox value={endAMPM} onChange={setEndAMPM} labelArray={['AM','PM']} />
                 </View>
 
-                <TextInput placeholder="Position" className="border p-2 mb-2 rounded"
+                <TextInput placeholder="Position" placeholderTextColor={"#3F72AF"} className="border-2 border-[#3F72AF] p-2 mb-2 rounded"
                   value={newShift.position} onChangeText={(text) => setNewShift(prev=>({...prev,position:text}))} />
 
                 <View className="flex-row justify-between mt-4">
-                  <TouchableOpacity onPress={()=>setModalVisible(false)} className="px-4 py-2 bg-gray-300 rounded"><Text>Cancel</Text></TouchableOpacity>
-                  <TouchableOpacity onPress={addShift} className="px-4 py-2 bg-[#3F72AF] rounded"><Text className="text-white font-bold">Add</Text></TouchableOpacity>
+                  <TouchableOpacity onPress={()=>setModalVisible(false)} className="px-4 py-2 bg-gray-300 rounded"><AppText>Cancel</AppText></TouchableOpacity>
+                  <TouchableOpacity onPress={addShift} className="px-4 py-2 bg-[#3F72AF] rounded"><AppText className="text-white font-bold">Add</AppText></TouchableOpacity>
                 </View>
               </View>
             </View>

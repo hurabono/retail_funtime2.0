@@ -4,7 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect } from 'expo-router';
 import axios from 'axios';
-import { useAuth } from '../../../context/AuthContext'; // AuthContext import
+import { useAuth } from '../../../context/AuthContext'; 
+import { AppText } from "../../../components/AppText";
+
 
 // API 기본 URL
 const API_URL = 'http://localhost:4000/api/auth';
@@ -28,7 +30,7 @@ const Employees = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
 
-  // ✅ editForm에 address 추가
+  // editForm에 address 추가
   const [editForm, setEditForm] = useState({ retailNumber: '', hourlyWage: '', address: '' });
   
   const fetchEmployees = async () => {
@@ -39,7 +41,7 @@ const Employees = () => {
     try {
       setLoading(true);
 
-      // 🔹 매니저 본인 정보 가져오기
+      //매니저 본인 정보 가져오기
       const { data } = await axios.get(`${API_URL}/me`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -52,7 +54,7 @@ const Employees = () => {
         address: data.address || ''
       });
 
-      // 🔹 직원들 정보 가져오기
+      //직원들 정보 가져오기
       const { data: empData } = await axios.get(`${API_URL}/employees`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -91,7 +93,7 @@ const Employees = () => {
         {
           retailNumber: editForm.retailNumber,
           hourlyWage: parseFloat(editForm.hourlyWage) || 0,
-          address: editForm.address // ✅ address 같이 전송
+          address: editForm.address
         },
         {
           headers: { Authorization: `Bearer ${token}` }
@@ -127,7 +129,7 @@ const Employees = () => {
   const renderItem = ({ item }: { item: Employee }) => (
     <TouchableOpacity onPress={() => handleSelectEmployee(item)}>
       <View className="bg-white rounded-xl p-5 mb-4 shadow-md border-4 border-[#3F72AF]">
-        <Text className="text-[#112D4E] text-lg font-bold">{item.username}</Text>
+        <AppText className="text-[#112D4E] text-lg font-bold">{item.username}</AppText>
         <Text className="text-gray-500 mt-1">Employee #: {item.employeeNumber}</Text>
         <Text className="text-gray-500 mt-1">Retail #: {item.retailNumber || 'N/A'}</Text>
         <Text className="text-gray-500 mt-1">Hourly Wage: ${item.hourlyWage.toFixed(2)}</Text>
@@ -140,14 +142,14 @@ const Employees = () => {
     <LinearGradient colors={['#112D4E', '#8199B6']} style={{ flex: 1 }}>
       <SafeAreaView className="mt-5" style={{ flex: 1 }}>
         <View className="px-5">
-          <Text className="text-white text-3xl font-bold text-center my-6">My Employees</Text>
+          <AppText className="text-white text-2xl font-bold text-center my-6 tracking-wider">My Employees</AppText>
 
           {/* 🔹 Manager 고정 카드 */}
-          <Text className="text-white text-xl font-bold mb-2">🔹 Manager</Text>
+          <AppText className="text-white text-xl font-bold mb-2 tracking-wide">🔹 Manager</AppText>
           {manager && (
             <TouchableOpacity onPress={() => handleSelectEmployee(manager)}>
               <View className="bg-white rounded-xl p-5 mb-4 shadow-md border-4 border-[#3F72AF]">
-                <Text className="text-[#112D4E] text-lg font-bold">{manager.username}</Text>
+                <AppText className="text-[#112D4E] text-lg font-bold">{manager.username}</AppText>
                 <Text className="text-gray-500 mt-1">Employee #: {manager.employeeNumber}</Text>
                 <Text className="text-gray-500 mt-1">Retail #: {manager.retailNumber || 'N/A'}</Text>
                 <Text className="text-gray-500 mt-1">Hourly Wage: ${manager.hourlyWage.toFixed(2)}</Text>
@@ -157,14 +159,14 @@ const Employees = () => {
           )}
 
           {/* 🔹 Employees 타이틀 */}
-          <Text className="text-white text-xl font-bold mb-2 mt-4">🔹 Employees</Text>
+          <AppText className="text-white text-xl font-bold mb-2 mt-4 tracking-wide">🔹 Employees</AppText>
 
           {employees.length === 0 ? (
-            <Text className="text-white text-center text-lg mt-10">
+            <AppText className="text-white text-center text-lg mt-10">
               No employees assigned to you.
-            </Text>
+            </AppText>
           ) : (
-            <FlatList
+            <FlatList 
               data={employees}
               renderItem={renderItem}
               keyExtractor={item => item._id}
@@ -184,9 +186,9 @@ const Employees = () => {
           <View style={styles.modalBackdrop}>
             <View style={styles.modalContainer}>
               <ScrollView>
-                <Text className="text-xl font-bold text-center text-[#112D4E] mb-5">
+                <AppText className="text-xl font-bold text-center text-[#112D4E] mb-5">
                   Edit {selectedEmployee?.username}
-                </Text>
+                </AppText>
 
                 <Text className="text-gray-500 mb-1">Retail Number</Text>
                 <TextInput
@@ -220,13 +222,13 @@ const Employees = () => {
                     end={{ x: 1, y: 1 }}
                     className="w-full py-3 rounded-3xl items-center justify-center border-2 border-white"
                   >
-                    <Text className="text-white text-lg font-bold">Save Changes</Text>
+                    <AppText className="text-white text-lg font-bold">Save Changes</AppText>
                   </LinearGradient>
                 </TouchableOpacity>
 
                 <TouchableOpacity activeOpacity={0.8} onPress={() => setModalVisible(false)}>
                   <View className="w-full py-3 rounded-3xl items-center justify-center border-2 border-gray-400">
-                    <Text className="text-gray-500 text-lg font-bold">Cancel</Text>
+                    <AppText className="text-gray-500 text-lg font-bold">Cancel</AppText>
                   </View>
                 </TouchableOpacity>
               </ScrollView>

@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, ScrollView, Alert, Modal, Pressable } fro
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { AppText } from "../../../components/AppText";
 
 const API_URL = "http://localhost:4000/api/auth";
 
@@ -175,20 +176,20 @@ const API_URL = "http://localhost:4000/api/auth";
         >
           {/* Header */}
           <View className="flex-row justify-between border-b border-white pb-3">
-            <Text className="text-white text-lg font-bold">Manager Dashboard</Text>
-            <Text className="text-white text-lg font-bold underline">Time Logs</Text>
+            <AppText className="text-white text-lg font-bold">Manager Dashboard</AppText>
+            <AppText className="text-white text-lg font-bold underline">Time Logs</AppText>
           </View>
 
           {/* 직원 목록 */}
           <View className="mt-6">
-            <Text className="text-white font-bold">🔹 Employees</Text>
+            <AppText className="text-white font-bold text-lg tracking-wider">🔹 Employees</AppText>
             {employees.map((emp) => (
               <TouchableOpacity
                 key={emp._id}
                 className="bg-white p-3 rounded-lg shadow-md mt-3"
                 onPress={() => fetchEmployeeDetail(emp._id)}
               >
-                <Text className="text-blue-900 font-bold text-lg">{emp.username}</Text>
+                <AppText className="text-[#112D4E] font-bold text-lg">{emp.username}</AppText>
                 <Text className="text-gray-600">Employee #: {emp.employeeNumber}</Text>
                 <Text className="text-gray-600">Wage: ${emp.hourlyWage}/hr</Text>
               </TouchableOpacity>
@@ -204,9 +205,9 @@ const API_URL = "http://localhost:4000/api/auth";
           >
             <View className="flex-1 justify-center items-center bg-black/50">
               <View className="bg-white w-[90%] h-[70%] p-5 rounded-lg shadow-lg">
-                <Text className="text-blue-900 font-bold text-xl mb-4">
+                <AppText className="text-[#112D4E] font-bold text-xl mb-4">
                   📊 {selectedEmployee?.username} - Time Logs
-                </Text>
+                </AppText>
 
                 <ScrollView>
                   {selectedEmployee?.timeLogs.length === 0 ? (
@@ -215,13 +216,13 @@ const API_URL = "http://localhost:4000/api/auth";
                     selectedEmployee?.timeLogs.map((log, idx) => (
                       <View
                         key={idx}
-                        className="bg-white p-4 rounded-lg shadow-md mb-3 border-2 border-blue-900"
+                        className="bg-white p-4 rounded-lg shadow-md mb-3 border-4 border-[#3F72AF]"
                       >
                         <Text className="text-gray-500">📅 {formatDateSafe(log.clockIn)}</Text>
-                        <Text className="text-blue-900 font-bold">
+                        <AppText className="text-[#112D4E] font-bold">
                           ⏰ {formatTimeSafe(log.clockIn)} -{" "}
                           {log.clockOut ? formatTimeSafe(log.clockOut) : "Ongoing"}
-                        </Text>
+                        </AppText>
                         <Text className="text-gray-600">
                           • Total Hours:{" "}
                           {log.clockOut ? calculateHours(log.clockIn, log.clockOut) : "In progress"}
@@ -232,10 +233,17 @@ const API_URL = "http://localhost:4000/api/auth";
                 </ScrollView>
 
                 <Pressable
-                  className="bg-blue-900 mt-4 py-2 rounded"
+                  className="mt-4"
                   onPress={() => setModalVisible(false)}
                 >
-                  <Text className="text-white text-center font-bold">Close</Text>
+                  <LinearGradient
+                    colors={['#8199B6', '#112D4E']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    className="w-full py-3 rounded-3xl items-center justify-center border-2 border-white"
+                    >
+                  <AppText className="text-white text-lg font-bold">Close</AppText>
+                  </LinearGradient>
                 </Pressable>
               </View>
             </View>

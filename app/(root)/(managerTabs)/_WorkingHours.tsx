@@ -1,12 +1,20 @@
 import { View, Text, Image, TouchableOpacity, ScrollView, Alert } from 'react-native';
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import axios from 'axios';
 import { useAuth } from '../../../context/AuthContext';
 import images from '@constants/images';
+import { AppText } from "../../../components/AppText";
+import { useFocusEffect } from "expo-router"; 
 
 const API_URL = 'http://localhost:4000/api/auth';
+
+
+interface UserInfo {
+  _id: string;
+  storeNumber: string;
+}
 
 interface TimeLog {
   _id?: string;
@@ -30,6 +38,8 @@ const WorkingHours = () => {
   const [weekSeconds, setWeekSeconds] = useState(0);
   const intervalRef = useRef<number | null>(null);
   const [latestAnnouncement, setLatestAnnouncement] = useState<Announcement | null>(null);
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const [loading, setLoading] = useState(true);
 
 
   // DB에서 기존 시간 기록 불러오기
@@ -50,6 +60,32 @@ const WorkingHours = () => {
       console.error(error);
     }
   };
+
+
+  const fetchMyInfo = async () => {
+    if (!token) return;
+    try {
+      setLoading(true);
+      const { data } = await axios.get('http://localhost:4000/api/auth/me', {
+          headers: { Authorization: `Bearer ${token}` }
+      });
+      setUserInfo(data);
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', 'Failed to fetch user information.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+   useFocusEffect(
+      useCallback(() => {
+      fetchMyInfo();
+      fetchLatestAnnouncement();
+    }, [token])
+    );
+
+
 
   // 이번 주 누적 시간 계산
   const calculateWeekTime = (logs: TimeLog[]) => {
@@ -188,34 +224,34 @@ const WorkingHours = () => {
         <ScrollView contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 20, paddingBottom: 100 }}>
           {/* Store Name */}
           <View className="mt-6 flex-row justify-between items-center">
-            <Text className="text-white text-xl font-bold">🏪 <Text className="underline">Store3064</Text></Text>
+            <AppText className="text-white text-base tracking-wider">🏪 <AppText className="underline">Store{userInfo?.storeNumber}</AppText></AppText>
           </View>
 
           {/* Header */}
-          <Text className="text-white text-3xl font-bold mt-5">Working hours</Text>
+          <AppText className="text-white text-2xl font-bold text-center my-6 tracking-wider">Working hours</AppText>
 
           {/* Announcement Bar */}
           <View className="bg-white rounded-full px-4 py-2 mt-3 flex-row justify-center items-center">
             <Image source={images.approval} style={{ width: 30 }} resizeMode="contain" />
-            <Text className="text-gray-600 font-semibold ml-2">
+            <AppText className="text-gray-600 font-semibold ml-2">
               {latestAnnouncement
                 ? `${latestAnnouncement.title} - ${new Date(latestAnnouncement.createdAt || "").toLocaleDateString()}`
                 : "No announcement today"}
-            </Text>
+            </AppText>
           </View>
 
           {/* Clock In Section */}
           <View className="mt-6">
-            <Text className="text-white text-lg font-semibold">• Clock In</Text>
+            <AppText className="text-white text-lg font-semibold tracking-wider">• Clock In</AppText>
 
             <View className="bg-white rounded-3xl p-2 mt-3 shadow-md flex-row justify-evenly items-center border-4 border-[#3F72AF]">
               <View>
-                <Text className="text-[#3F72AF] text-sm font-bold ">• Today</Text>
+                <AppText className="text-[#3F72AF] text-sm font-bold ">• Today</AppText>
                 <Text className="text-[#112D4E] text-3xl font-bold">{formatTime(todaySeconds)}</Text>
               </View>
               <View className="h-[100px] bg-[#3F72AF]  w-[0.5px]"></View>
               <View>
-                <Text className="text-[#3F72AF] text-sm font-bold">• This week</Text>
+                <AppText className="text-[#3F72AF] text-sm font-bold">• This week</AppText>
                 <Text className="text-[#112D4E] text-3xl font-bold">{formatTime(weekSeconds)}</Text>
               </View>
             </View>
@@ -232,7 +268,7 @@ const WorkingHours = () => {
                 end={{ x: 1, y: 1 }}
                 className="w-[200px] py-2 rounded-full flex items-center justify-center border-2 border-white"
               >
-                <Text className="text-white text-lg font-bold">{isClockedIn ? 'Clocked Out' : 'Clock In'}</Text>
+                <AppText className="text-white text-lg font-bold tracking-wider">{isClockedIn ? 'Clocked Out' : 'Clock In'}</AppText>
               </LinearGradient>
             </TouchableOpacity>
           </View>
@@ -248,19 +284,19 @@ const WorkingHours = () => {
                 <View className="mt-2 flex-row justify-between">
                   <View>
                     <Text className="text-gray-500">• Total Hours</Text>
-                    <Text className="text-[#3F72AF] font-bold">
+                    <AppText className="text-[#3F72AF] font-bold">
                       {log.clockIn && log.clockOut
                         ? ((new Date(log.clockOut).getTime() - new Date(log.clockIn).getTime()) / 3600000).toFixed(2)
                         : log.clockIn && !log.clockOut
                         ? (todaySeconds / 3600).toFixed(2)
                         : '0'} hrs
-                    </Text>
+                    </AppText>
                   </View>
                   <View>
                     <Text className="text-gray-500">• Check in & out</Text>
-                    <Text className="text-[#3F72AF] font-bold">
+                    <AppText className="text-[#3F72AF] font-bold">
                       {log.clockIn ? new Date(log.clockIn).toLocaleTimeString() : '-'} - {log.clockOut ? new Date(log.clockOut).toLocaleTimeString() : '-'}
-                    </Text>
+                    </AppText>
                   </View>
                 </View>
               </View>

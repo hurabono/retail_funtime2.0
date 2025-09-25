@@ -3,6 +3,8 @@ import { View, Text, TouchableOpacity, ScrollView, Alert, Platform } from "react
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { AppText } from "../../../components/AppText";
+
 
 // 환경별 API URL
 const API_URL =
@@ -168,11 +170,11 @@ const ManagerInbox = () => {
           className="flex-1"
           contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 20, paddingBottom: 100 }}
         >
-          <View className="flex-row justify-between border-b border-white pb-3">
-            <Text className="text-white text-lg font-bold">Manager Panel</Text>
-            <Text className="text-white text-lg font-bold underline">
+          <View className="flex-row justify-between border-b border-white pb-3 tracking-wider">
+            <AppText className="text-white text-lg font-bold">Manager Panel</AppText>
+            <AppText className="text-white text-lg font-bold underline">
               Inbox {pendingCount > 0 && `(${pendingCount})`}
-            </Text>
+            </AppText>
           </View>
 
           <View className="mt-6">
@@ -184,14 +186,14 @@ const ManagerInbox = () => {
               requests.map((req) => (
                 <View
                   key={req._id}
-                  className="bg-white p-4 rounded-lg shadow-md mb-4 border-4 border-blue-500"
+                  className="bg-white p-4 rounded-lg shadow-md mb-4 border-4 border-[#3F72AF]"
                 >
-                  <Text className="text-blue-900 font-bold">
+                  <AppText className="text-[#3F72AF] font-bold">
                     {req.employeeName} ({req.employeeNumber || req.employeeId})
-                  </Text>
-                  <Text className="text-black text-lg font-bold">
+                  </AppText>
+                  <AppText className="text-[#112D4E] text-lg font-bold">
                     {formatDate(req.date)}
-                  </Text>
+                  </AppText>
                   <Text className="text-gray-500">{req.details}</Text>
                   <Text className="text-gray-500">
                    Submitted: {formatDate(req.submittedAt)}
@@ -201,16 +203,16 @@ const ManagerInbox = () => {
                   {req.status === "pending" ? (
                     <View className="flex-row mt-3 justify-between">
                       <TouchableOpacity
-                        className="bg-green-600 px-4 py-2 rounded-lg"
+                        className="bg-[#3F72AF] px-4 py-2 rounded-lg"
                         onPress={() => handleDecision(req._id, "approved")}
                       >
-                        <Text className="text-white font-bold">Approve</Text>
+                        <AppText className="text-white font-bold">Approve</AppText>
                       </TouchableOpacity>
                       <TouchableOpacity
-                        className="bg-red-600 px-4 py-2 rounded-lg"
+                        className="bg-[#112D4E] px-4 py-2 rounded-lg"
                         onPress={() => handleDecision(req._id, "denied")}
                       >
-                        <Text className="text-white font-bold">Deny</Text>
+                        <AppText className="text-white font-bold">Deny</AppText>
                       </TouchableOpacity>
                     </View>
                   ) : (
@@ -218,7 +220,7 @@ const ManagerInbox = () => {
                       className="bg-gray-600 px-4 py-2 rounded-lg mt-3"
                       onPress={() => handleDelete(req._id)}
                     >
-                      <Text className="text-white font-bold">Delete</Text>
+                      <AppText className="text-white font-bold">Delete</AppText>
                     </TouchableOpacity>
                   )}
                 </View>

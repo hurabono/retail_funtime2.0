@@ -6,7 +6,7 @@ import { useFocusEffect } from "expo-router";
 import { Ionicons, MaterialIcons, Entypo, FontAwesome5 } from "@expo/vector-icons";
 import { useAuth } from '../../../context/AuthContext';
 import axios from "axios";
-
+import { AppText } from "../../../components/AppText";
 
 const API_URL = 'http://localhost:4000/api/auth';
 
@@ -62,26 +62,26 @@ const SettingsScreen = () => {
         <ScrollView 
           contentContainerStyle={{
             paddingVertical: 20,
-            paddingHorizontal: 20, // ← 좌우 여백 크게
+            paddingHorizontal: 20,
           }}
         >
           {/* Header */}
-          <Text className="text-white text-3xl font-bold mb-6">Settings</Text>
+          <AppText className="text-white text-2xl font-bold text-center my-6 tracking-wider">Settings</AppText>
 
           {/* WIN + Logout */}
           <View className="flex-row justify-between items-center mb-4">
-            <Text className="text-white font-semibold">🏪 Store{userInfo?.storeNumber}</Text>
+            <AppText className="text-white font-semibold">🏪 Store{userInfo?.storeNumber}</AppText>
             <TouchableOpacity>
-              <Text className="text-white underline font-bold">Logout</Text>
+              <AppText className="text-white underline font-bold">Logout</AppText>
             </TouchableOpacity>
           </View>
 
           {/* Help section */}
           <TouchableOpacity className="mb-8">
-            <Text className="text-white text-sm">
+            <AppText className="text-white text-sm">
               Do you need any help?{" "}
-              <Text className="underline font-semibold">Click here</Text>
-            </Text>
+              <Text className="underline font-semibold ml-2">Click here</Text>
+            </AppText>
           </TouchableOpacity>
 
           {/* Settings buttons */}
@@ -97,15 +97,15 @@ const SettingsScreen = () => {
                 elevation: 6,
               }}
             >
-              {/* 아이콘 + 텍스트 */}
+              {/* icon + test */}
               <View className="flex-row items-center space-x-3">
                 {item.icon}
-                <Text className="text-[#112D4E] font-semibold text-base">
+                <AppText className="text-[#112D4E] font-semibold text-base">
                   {item.label}
-                </Text>
+                </AppText>
               </View>
 
-              {/* 오른쪽 화살표 */}
+              {/*arrow icons */}
               <Ionicons name="chevron-forward" size={22} color="#3F72AF" />
             </TouchableOpacity>
           ))}

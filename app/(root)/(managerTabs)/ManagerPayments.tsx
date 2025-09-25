@@ -11,6 +11,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import axios from "axios";
 import { useAuth } from "../../../context/AuthContext";
+import { AppText } from "../../../components/AppText";
+
 
 const API_URL = "http://localhost:4000/api/auth";
 
@@ -62,7 +64,7 @@ const ManagerPayments = () => {
       });
       calculatePayrolls(data._id, data.hourlyWage, data.timeLogs || [], true);
     } catch (err) {
-      console.error("❌ 유저 데이터 불러오기 실패:", err);
+      console.error("❌ failed user data upload:", err);
     } finally {
       setLoading(false);
     }
@@ -75,7 +77,7 @@ const ManagerPayments = () => {
       });
       setEmployees(data);
 
-      // 직원별 급여 계산
+      // calculate payment
       const payrolls: any = {};
       data.forEach((emp: UserData) => {
         const { current, history } = calculatePayrolls(
@@ -88,11 +90,11 @@ const ManagerPayments = () => {
       });
       setEmployeePayrolls(payrolls);
     } catch (err) {
-      console.error("❌ 직원 데이터 불러오기 실패:", err);
+      console.error("❌ failed fetch employee member :", err);
     }
   };
 
-  // 2주 단위 급여 계산 + 1년치 리스트 유지
+  // 2weeks payment history
   const calculatePayrolls = (
     id: string,
     hourlyWage: number,
@@ -181,21 +183,21 @@ const ManagerPayments = () => {
           }}
         >
           {/* Header */}
-          <Text className="text-white text-3xl font-bold mt-5">My Payment</Text>
+          <AppText className="text-white text-2xl font-bold text-center my-6 tracking-wider">My Payment</AppText>
 
           {/* My Balances */}
           <View className="mt-6">
-            <Text className="text-white text-xl font-bold">My balances</Text>
+            <AppText className="text-white text-xl font-bold">My balances</AppText>
             <View className="flex-row justify-between mt-3">
               <View className="border border-white rounded-lg p-4 w-[48%]">
-                <Text className="text-gray-300 text-sm">Working hours</Text>
+                <AppText className="text-gray-300 text-sm">Working hours</AppText>
                 <Text className="text-white text-2xl font-bold">
                   {currentPay?.totalHours.toFixed(2)} hrs
                 </Text>
               </View>
 
               <View className="border border-white rounded-lg p-4 w-[48%]">
-                <Text className="text-gray-300 text-sm">Wage per hour</Text>
+                <AppText className="text-gray-300 text-sm">Wage per hour</AppText>
                 <Text className="text-white text-2xl font-bold">
                   ${user?.hourlyWage.toFixed(2)}
                 </Text>
@@ -204,21 +206,21 @@ const ManagerPayments = () => {
 
             {/* Next Payment Date */}
             <Text className="text-gray-300 text-lg mt-4">
-              <Text className="font-bold text-white">Next payment date :</Text>{" "}
+              <AppText className="font-bold text-white">Next payment date :</AppText>{" "}
               {nextPayDate}
             </Text>
           </View>
 
           {/* Current Paycheck */}
-          <Text className="text-white text-xl font-bold mt-6">
+          <AppText className="text-white text-xl font-bold mt-6 tracking-wider">
             • Current paycheck
-          </Text>
+          </AppText>
           {currentPay && (
             <View className="bg-white p-4 mt-4 rounded-xl shadow-lg border-4 border-[#3F72AF]">
-              <Text className="text-gray-500 font-bold">
+              <AppText className="text-gray-500 font-bold">
                 Pay Period: {currentPay.start.toDateString()} -{" "}
                 {currentPay.end.toDateString()}
-              </Text>
+              </AppText>
               <View className="mt-2">
                 <Text className="text-gray-500">
                   — Total working hours{" "}
@@ -253,9 +255,9 @@ const ManagerPayments = () => {
           )}
 
           {/* Previous Paychecks (1년치) */}
-          <Text className="text-white text-xl font-bold mt-6">
+          <AppText className="text-white text-xl font-bold mt-6">
             • Previous paychecks (last 1 year)
-          </Text>
+          </AppText>
           {payHistory
             .slice()
             .reverse()
@@ -295,9 +297,9 @@ const ManagerPayments = () => {
             ))}
 
           {/* Employees' Payments */}
-          <Text className="text-white text-3xl font-bold mt-10">
-            Employees' Payments
-          </Text>
+          <AppText className="text-white text-xl font-bold mt-6">
+             • Employees' Payments
+          </AppText>
           {employees.map((emp) => (
             <Pressable
               key={emp._id}
@@ -305,9 +307,9 @@ const ManagerPayments = () => {
                 setSelectedEmployee(emp);
                 setModalVisible(true);
               }}
-              className="bg-[#3F72AF] mt-4 p-4 rounded-xl"
+              className="mt-4 p-2 "
             >
-              <Text className="text-white text-xl font-bold">{emp.username}</Text>
+              <Text className="font-robotoSlabLight text-white text-xl font-bold tracking-wider">- {emp.username}</Text>
             </Pressable>
           ))}
         </ScrollView>
@@ -322,9 +324,9 @@ const ManagerPayments = () => {
       >
         <View className="flex-1 justify-center items-center bg-black/50">
           <View className="bg-white w-11/12 rounded-2xl p-5">
-            <Text className="text-2xl font-bold mb-3 text-center text-[#112D4E]">
+            <AppText className="text-2xl font-bold mb-3 text-center text-[#112D4E]">
               {selectedEmployee?.username}'s Payments
-            </Text>
+            </AppText>
 
             <ScrollView style={{ maxHeight: 500 }}>
               {selectedEmployee &&
@@ -336,9 +338,9 @@ const ManagerPayments = () => {
                       {/* Current Pay */}
                       {payroll.current && (
                         <View className="bg-gray-100 p-4 rounded-lg mb-4 border-2 border-[#3F72AF]">
-                          <Text className="text-gray-700 font-bold">
+                          <AppText className="text-gray-700 font-bold text-lg">
                             Current Paycheck
-                          </Text>
+                          </AppText>
                           <Text>
                             Pay Period:{" "}
                             {payroll.current.start.toDateString()} -{" "}
@@ -353,9 +355,9 @@ const ManagerPayments = () => {
                           <Text>
                             Tax: -${payroll.current.tax.toFixed(2)}
                           </Text>
-                          <Text className="font-bold text-[#3F72AF] mt-2">
+                          <AppText className="font-bold text-lg text-[#3F72AF] mt-2">
                             Net: ${payroll.current.netPay.toFixed(2)}
-                          </Text>
+                          </AppText>
                         </View>
                       )}
 
@@ -391,7 +393,7 @@ const ManagerPayments = () => {
               onPress={() => setModalVisible(false)}
               className="bg-[#112D4E] p-3 rounded-xl mt-5"
             >
-              <Text className="text-white text-center font-bold">Close</Text>
+              <AppText className="text-white text-center font-bold text-lg tracking-wider">Close</AppText>
             </Pressable>
           </View>
         </View>

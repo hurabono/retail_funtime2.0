@@ -6,11 +6,11 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        Figtree: ['Figtree-Regular','sans-serif'],
-        "Figtree-Bold": ['Figtree-Bold','sans-serif'],
-        "Figtree-ExtraBold": ['Figtree-ExtraBold','sans-serif'],
-        "Figtree-Medium": ['Figtree-Medium','sans-serif'],
-        "Figtree-Light": ['Figtree-Light','sans-serif'],
+        robotoSlab: ["RobotoSlab-Regular"],
+        robotoSlabBold: ["RobotoSlab-Bold"],
+        robotoSlabExtraBold: ["RobotoSlab-ExtraBold"],
+        robotoSlabMedium: ["RobotoSlab-Medium"],
+        robotoSlabLight: ["RobotoSlab-Light"],
       },
       colors: {
         "primary": "#112D4E",
