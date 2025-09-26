@@ -8,6 +8,7 @@ import axios from 'axios';
 import { useAuth } from '../../../context/AuthContext';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
+import { AppText } from "../../../components/AppText";
 
 
 interface UserInfo {
@@ -212,12 +213,12 @@ const myInfo = () => {
         <ScrollView contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 20, paddingBottom: 100 }}>
           {/* profile top information */}
           <View className="flex-row justify-between items-center mt-6">
-            <Text className="text-white text-xl font-bold">🏪 <Text className="underline">Store: {userInfo.storeNumber}</Text></Text>
+            <AppText className="text-white text-xl font-bold">🏪 <Text className="underline">Store: {userInfo.storeNumber}</Text></AppText>
           </View>
 
           <View className="mt-4">
-            <Text className="text-gray-300 text-xs">📅 {calculateTenure(userInfo.createdAt)}</Text>
-            <Text className="text-white text-3xl font-bold mt-2 mb-5">Hello, {userInfo.username}!</Text>
+            <AppText className="text-gray-300 text-xs">📅 {calculateTenure(userInfo.createdAt)}</AppText>
+            <AppText className="text-white text-3xl font-bold mt-2 mb-5 tracking-wider">Hello, {userInfo.username}!</AppText>
             <Text className="text-gray-300 mt-1">Hired : {formatDate(userInfo.createdAt)}</Text>
             <View className="flex-row items-center mt-2">
               <Text className="text-gray-300">WIN {userInfo.employeeNumber} </Text>
@@ -251,46 +252,46 @@ const myInfo = () => {
 
           {/* My Availability */}
           <View className="bg-white rounded-xl p-5 mt-6 shadow-md border-4 border-[#3F72AF]">
-            <Text className="text-[#3F72AF] font-bold">My Availability</Text>
+            <AppText className="text-[#3F72AF] font-bold">My Availability</AppText>
             <View className="flex-row justify-between mt-2">
               <View>
                 <Text className="text-gray-500">Start</Text>
-                <Text className="text-[#3F72AF] font-bold">{todayClockIn}</Text>
+                <AppText className="text-[#3F72AF] font-bold">{todayClockIn}</AppText>
               </View>
               <View>
                 <Text className="text-gray-500">End</Text>
-                <Text className="text-[#3F72AF] font-bold">{todayClockOut}</Text>
+                <AppText className="text-[#3F72AF] font-bold">{todayClockOut}</AppText>
               </View>
               <Image source={images.calendarIcon} style={{ width: 80 }} />
             </View>
             
             <TouchableOpacity className="mt-4 bg-secondary py-2 rounded-xl items-center">
               <Link href="/_Schedule" className="inline-block flex items-center justify-center">
-              <Text className="text-white font-bold">View Details</Text>
+              <AppText className="text-white font-bold tracking-wider">View Details</AppText>
               </Link>
             </TouchableOpacity>
           </View>
 
           {/* Job Information */}
           <View className="bg-white rounded-xl p-5 mt-6 shadow-md border-4 border-[#3F72AF]">
-            <Text className="text-[#3F72AF] font-bold">Job Information</Text>
+            <AppText className="text-[#3F72AF] font-bold">Job Information</AppText>
             <View className="flex-row justify-between mt-2">
               <View>
                 <Text className="text-gray-500">My role</Text>
-                <Text className="text-[#3F72AF] font-bold">{userInfo.role}</Text>
+                <AppText className="text-[#3F72AF] font-bold">{userInfo.role}</AppText>
               </View>
               <View>
                 <Text className="text-gray-500">Reporting to</Text>
-                <Text className="text-[#3F72AF] font-bold">{userInfo.manager ? userInfo.manager.username : 'N/A'}</Text>
+                <AppText className="text-[#3F72AF] font-bold">{userInfo.manager ? userInfo.manager.username : 'N/A'}</AppText>
               </View>
             </View>
             <View className="mt-4">
               <Text className="text-gray-500">Retail Number</Text>
-              <Text className="text-[#3F72AF] font-bold">{userInfo.retailNumber || 'N/A'}</Text>
+              <AppText className="text-[#3F72AF] font-bold">{userInfo.retailNumber || 'N/A'}</AppText>
             </View>
             <View className="mt-4">
               <Text className="text-gray-500">Office</Text>
-              <Text className="text-[#3F72AF] font-bold">{userInfo.address || 'N/A'}</Text>
+              <AppText className="text-[#3F72AF] font-bold">{userInfo.address || 'N/A'}</AppText>
             </View>
           </View>
         </ScrollView>

@@ -7,7 +7,7 @@ export default function TabLayout() {
     
     <Tabs
       screenOptions={{
-        headerShown: false, // 기본적으로 헤더 숨김
+        headerShown: false,
         tabBarShowLabel: false,
         tabBarStyle: {
           position: "absolute",

@@ -5,6 +5,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Picker } from "@react-native-picker/picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Link } from 'expo-router';
+import { AppText } from "../../../components/AppText";
+
 
 // API 호출 base URL
 const API_URL = "http://localhost:4000/api/auth";
@@ -165,28 +167,28 @@ const MyRequest = () => {
           {/* 상단 네비게이션 */}
           <View className="flex-row justify-between border-b border-white pb-3">
             <Link href="/_Schedule">
-              <Text className="text-white text-lg font-bold">My Schedule</Text>
+              <AppText className="text-white text-lg font-bold">My Schedule</AppText>
             </Link>
             <Link href="/_MyRequest">
-              <Text className="text-white text-lg font-bold underline">My Request</Text>
+              <AppText className="text-white text-lg font-bold underline">My Request</AppText>
             </Link>
           </View>
 
           {/* 설명 섹션 */}
           <View className="mt-6">
-            <Text className="text-white text-base font-bold tracking-wide">🔹 Manage my Requests</Text>
-            <Text className="text-gray-300 text-sm">
+            <AppText className="text-white text-base font-bold tracking-wide">🔹 Manage my Requests</AppText>
+            <AppText className="text-gray-300 text-sm ml-6">
               View and report absences and late arrivals or request time off.
-            </Text>
+            </AppText>
           </View>
 
 
           {/* 요청 관리 섹션 */}
           <View className="bg-gray-200 p-4 mt-6 rounded-lg">
-            <Text className="text-blue-900 font-bold text-lg">Manage my Requests</Text>
-            <Text className="text-gray-500 text-sm">
+            <AppText className="text-[#112D4E] font-bold text-lg">Manage my Requests</AppText>
+            <AppText className="text-gray-500 text-sm">
               Upcoming absences, time off, and shift swaps.
-            </Text>
+            </AppText>
             <TouchableOpacity
               activeOpacity={0.8} className="my-2"
               onPress={() => setShowForm(!showForm)}
@@ -197,7 +199,7 @@ const MyRequest = () => {
                 end={{ x: 1, y: 1 }}
                 className="w-full py-3 rounded-xl items-center justify-center border-2 border-white"
               >
-              <Text className="text-white font-bold text-center">Make Request</Text>
+              <AppText className="text-white font-bold text-center tracking-wider">Make Request</AppText>
             </LinearGradient>
             </TouchableOpacity>
 
@@ -206,7 +208,7 @@ const MyRequest = () => {
             {showForm && (
               <View className="mt-4 bg-white p-4 rounded-lg">
                 {/* Date */}
-                <Text className="text-blue-900 font-bold mb-2">Date</Text>
+                <AppText className="text-[#112D4E] font-bold mb-2">Date</AppText>
                 <TextInput
                   className="border border-gray-400 rounded p-2 mb-3"
                   placeholder="YYYY-MM-DD"
@@ -215,7 +217,7 @@ const MyRequest = () => {
                 />
 
                 {/* Reason */}
-                <Text className="text-blue-900 font-bold mb-2">Reason</Text>
+                <AppText className="text-[#112D4E] font-bold mb-2">Reason</AppText>
                 <View className="border border-gray-400 rounded mb-3">
                   <Picker
                     selectedValue={reason}
@@ -229,7 +231,7 @@ const MyRequest = () => {
                 </View>
 
                 {/* Extra Details */}
-                <Text className="text-blue-900 font-bold mb-2">Details</Text>
+                <AppText className="text-[#112D4E] font-bold mb-2">Details</AppText>
                 <TextInput
                   className="border border-gray-400 rounded p-2 mb-3"
                   placeholder="Write additional details..."
@@ -243,7 +245,7 @@ const MyRequest = () => {
                   className="bg-[#3F72AF] py-2 px-4 rounded-lg mt-2"
                   onPress={handleSubmit}
                 >
-                  <Text className="text-white font-bold text-center">Submit</Text>
+                  <AppText className="text-white font-bold text-center tracking-widest">Submit</AppText>
                 </TouchableOpacity>
               </View>
             )}
@@ -251,10 +253,10 @@ const MyRequest = () => {
 
           {/* 과거 요청 섹션 */}
           <View className="mt-6">
-            <Text className="text-white text-base font-bold tracking-wide">🔹 Past requests</Text>
-            <Text className="text-gray-300 text-sm">
+            <AppText className="text-white text-base font-bold tracking-wide">🔹 Past requests</AppText>
+            <AppText className="text-gray-300 text-sm ml-6">
               Past absences, time off and shift swaps.
-            </Text>
+            </AppText>
           </View>
 
           {/* 필터 버튼 */}
@@ -267,9 +269,9 @@ const MyRequest = () => {
                 }`}
                 onPress={() => setFilter(status)}
               >
-                <Text className="text-white font-bold">
+                <AppText className="text-white font-bold">
                   {status.charAt(0).toUpperCase() + status.slice(1)}
-                </Text>
+                </AppText>
               </TouchableOpacity>
             ))}
           </View>
@@ -278,13 +280,13 @@ const MyRequest = () => {
           <View className="mt-6">
             {requests
               .filter((req) => req.status?.toLowerCase() === filter.toLowerCase())
-              .filter((req) => !req.employeeDelete) // 숨김 처리된 요청 제외
+              .filter((req) => !req.employeeDelete) 
               .map((req) => (
                 <View key={req._id} className="bg-white p-4 rounded-lg shadow-md mb-4 border-4 border-[#3F72AF]">
-                  <Text className="text-[#3F72AF] font-bold">
+                  <AppText className="text-[#3F72AF] font-bold tracking-wider">
                     {req.reason === "vacation" ? "Vacation" : req.reason === "absence" ? "Absence" : req.reason === "day_off" ? "Day Off" : "Other"}
-                  </Text>
-                  <Text className="text-black text-lg font-bold">{formatDate(req.date)}</Text>
+                  </AppText>
+                  <AppText className="text-black text-lg font-bold">{formatDate(req.date)}</AppText>
                   <Text className="text-gray-500 text-base mb-2">{req.details}</Text>
                   <Text className="text-gray-500">Submitted: {formatSubmittedDate(req.submittedAt)}</Text>
                   <Text className="text-gray-500">Status: {req.status}</Text>
@@ -292,10 +294,10 @@ const MyRequest = () => {
                   {/* pending이 아니면 Delete 버튼 렌더링 */}
                   {req.status.toLowerCase() !== 'pending' && (
                     <TouchableOpacity
-                      className="bg-red-600 px-4 py-2 rounded-lg mt-3"
+                      className="bg-[#112D4E] px-4 py-2 rounded-lg mt-3"
                       onPress={() => deleteMyLeaveRequest(req._id)}
                     >
-                      <Text className="text-white font-bold text-center">Delete</Text>
+                      <AppText className="text-white font-bold text-center">Delete</AppText>
                     </TouchableOpacity>
                   )}
                 </View>

@@ -4,6 +4,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import axios from "axios";
 import { useAuth } from "../../../context/AuthContext";
+import { AppText } from "../../../components/AppText";
+
 
 const API_URL = "http://localhost:4000/api/auth";
 
@@ -125,77 +127,77 @@ const Payment = () => {
       <SafeAreaView className="flex-1 px-5 mt-5">
         <ScrollView contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 20, paddingBottom: 100 }}>
           {/* Header */}
-          <Text className="text-white text-3xl font-bold mt-5">My Payment</Text>
+          <AppText className="text-white text-2xl font-bold text-center my-6 tracking-wider">My Payment</AppText>
 
           {/* My Balances */}
           <View className="mt-6">
-            <Text className="text-white text-xl font-bold">My balances</Text>
+            <AppText className="text-white text-xl font-bold">My balances</AppText>
             <View className="flex-row justify-between mt-3">
               <View className="border border-white rounded-lg p-4 w-[48%]">
-                <Text className="text-gray-300 text-sm">Working hours</Text>
+                <AppText className="text-gray-300 text-sm">Working hours</AppText>
                 <Text className="text-white text-2xl font-bold">{currentPay?.totalHours.toFixed(2)} hrs</Text>
               </View>
 
               <View className="border border-white rounded-lg p-4 w-[48%]">
-                <Text className="text-gray-300 text-sm">Wage per hour</Text>
+                <AppText className="text-gray-300 text-sm">Wage per hour</AppText>
                 <Text className="text-white text-2xl font-bold">${user?.hourlyWage.toFixed(2)}</Text>
               </View>
             </View>
 
             {/* Next Payment Date */}
             <Text className="text-gray-300 text-lg mt-4">
-              <Text className="font-bold text-white">Next payment date :</Text> {nextPayDate}
+              <AppText className="font-bold text-white">Next payment date :</AppText> {nextPayDate}
             </Text>
           </View>
 
           {/* Current Paycheck */}
-          <Text className="text-white text-xl font-bold mt-6">• Current paycheck</Text>
+          <AppText className="text-white text-xl font-bold mt-6">• Current paycheck</AppText>
           {currentPay && (
             <View className="bg-white p-4 mt-4 rounded-xl shadow-lg border-4 border-[#3F72AF]">
-              <Text className="text-gray-500 font-bold">
+              <AppText className="text-gray-500 font-bold">
                 Pay Period: {currentPay.start.toDateString()} - {currentPay.end.toDateString()}
-              </Text>
+              </AppText>
               <View className="mt-2">
                 <Text className="text-gray-500">
-                  — Total working hours <Text className="text-black font-bold">{currentPay.totalHours.toFixed(2)} hrs</Text>
+                  — Total working hours <Text className="text-[#3F72AF] font-bold">{currentPay.totalHours.toFixed(2)} hrs</Text>
                 </Text>
                 <Text className="text-gray-500">
-                  — Wage per hour <Text className="text-black font-bold">${user?.hourlyWage.toFixed(2)}</Text>
+                  — Wage per hour <Text className="text-[#3F72AF] font-bold">${user?.hourlyWage.toFixed(2)}</Text>
                 </Text>
                 <Text className="text-gray-500">
-                  — Gross Pay <Text className="text-black font-bold">${currentPay.grossPay.toFixed(2)}</Text>
+                  — Gross Pay <Text className="text-[#3F72AF] font-bold">${currentPay.grossPay.toFixed(2)}</Text>
                 </Text>
                 <Text className="text-gray-500">
-                  — Taxes (15%) <Text className="text-black font-bold">-${currentPay.tax.toFixed(2)}</Text>
+                  — Taxes (15%) <Text className="text-[#3F72AF] font-bold">-${currentPay.tax.toFixed(2)}</Text>
                 </Text>
               </View>
 
-              <Text className="text-[#3F72AF] text-lg font-bold mt-3 text-right">
+              <AppText className="text-[#3F72AF] text-lg font-bold mt-3 text-right">
                 Net Pay ${currentPay.netPay.toFixed(2)}
-              </Text>
+              </AppText>
             </View>
           )}
 
           {/* Previous Paychecks (1년치) */}
-          <Text className="text-white text-xl font-bold mt-6">• Previous paychecks (last 1 year)</Text>
+          <AppText className="text-white text-xl font-bold mt-6">• Previous paychecks (last 1 year)</AppText>
           {payHistory.reverse().map((pay, idx) => (
             <View key={idx} className="bg-white p-4 mt-4 rounded-xl shadow-lg border-4 border-[#3F72AF]">
               <Text className="text-gray-500 font-bold">
                 Pay Period: {pay.start.toDateString()} - {pay.end.toDateString()}
               </Text>
               <View className="mt-2">
-                <Text className="text-gray-500">
+                <AppText className="text-gray-500">
                   — Total working hours <Text className="text-black font-bold">{pay.totalHours.toFixed(2)} hrs</Text>
-                </Text>
+                </AppText>
                 <Text className="text-gray-500">
                   — Gross Pay <Text className="text-black font-bold">${pay.grossPay.toFixed(2)}</Text>
                 </Text>
                 <Text className="text-gray-500">
                   — Taxes (15%) <Text className="text-black font-bold">-${pay.tax.toFixed(2)}</Text>
                 </Text>
-                <Text className="text-[#3F72AF] text-lg font-bold mt-3 text-right">
+                <AppText className="text-[#3F72AF] text-lg font-bold mt-3 text-right">
                   Net Pay ${pay.netPay.toFixed(2)}
-                </Text>
+                </AppText>
               </View>
             </View>
           ))}

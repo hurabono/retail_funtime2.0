@@ -7,7 +7,7 @@ export default function TabLayout() {
     
     <Tabs
       screenOptions={{
-        headerShown: false, // 기본적으로 헤더 숨김
+        headerShown: false,
         tabBarShowLabel: false,
         tabBarStyle: {
           position: "absolute",
@@ -31,8 +31,8 @@ export default function TabLayout() {
         options={{
           tabBarIcon: () => (
             <View className="items-center justify-center">
-              <Ionicons name="home-outline" size={24} color="black" />
-              <Text className="text-black text-xs">Home</Text>
+              <Ionicons name="home-outline" size={24} color="#112D4E" />
+              <Text className="font-robotoSlabLight text-[#112D4E] text-xs">Home</Text>
             </View>
           ),
         }}
@@ -42,8 +42,8 @@ export default function TabLayout() {
         options={{
           tabBarIcon: () => (
             <View className="items-center">
-              <Ionicons name="person-outline" size={24} color="black" />
-              <Text className="text-black text-xs">Info</Text>
+              <Ionicons name="person-outline" size={24} color="#112D4E" />
+              <Text className="font-robotoSlabLight text-[#112D4E] text-xs">Info</Text>
             </View>
           ),
         }}
@@ -53,8 +53,8 @@ export default function TabLayout() {
         options={{
           tabBarIcon: () => (
             <View className="items-center">
-              <Ionicons name="cash-outline" size={24} color="black" />
-              <Text className="text-black text-xs">Payment</Text>
+              <Ionicons name="cash-outline" size={24} color="#112D4E" />
+              <Text className="font-robotoSlabLight text-[#112D4E] text-xs">Payment</Text>
             </View>
           ),
         }}
@@ -64,8 +64,8 @@ export default function TabLayout() {
         options={{
           tabBarIcon: () => (
             <View className="flex justify-center items-center">
-              <Ionicons name="settings-outline" size={24} color="black" />
-              <Text className="text-black text-xs">Settings</Text>
+              <Ionicons name="settings-outline" size={24} color="#112D4E" />
+              <Text className="font-robotoSlabLight text-[#112D4E] text-xs">Settings</Text>
             </View>
           ),
         }}

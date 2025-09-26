@@ -6,6 +6,8 @@ import axios from 'axios';
 import { useFocusEffect } from "expo-router"; 
 import { useAuth } from '../../../context/AuthContext';
 import images from '@constants/images';
+import { AppText } from "../../../components/AppText";
+
 
 const API_URL = 'http://localhost:4000/api/auth';
 
@@ -230,34 +232,34 @@ const WorkingHours = () => {
         <ScrollView contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 20, paddingBottom: 100 }}>
           {/* Store Name */}
           <View className="mt-6 flex-row justify-between items-center">
-            <Text className="text-white text-xl font-bold"><Text className="underline">🏪 Store{userInfo?.storeNumber}</Text></Text>
+            <AppText className="text-white text-base tracking-wider"><Text className="underline">🏪 Store{userInfo?.storeNumber}</Text></AppText>
           </View>
 
           {/* Header */}
-          <Text className="text-white text-3xl font-bold mt-5">Working hours</Text>
+          <AppText className="text-white text-2xl font-bold text-center my-6 tracking-wider">Working hours</AppText>
 
           {/* Announcement Bar */}
           <View className="bg-white rounded-full px-4 py-2 mt-3 flex-row justify-center items-center">
             <Image source={images.approval} style={{ width: 30 }} resizeMode="contain" />
-            <Text className="text-gray-600 font-semibold ml-2">
+            <AppText className="text-gray-600 font-semibold ml-2">
               {latestAnnouncement
                 ? `${latestAnnouncement.title} - ${new Date(latestAnnouncement.createdAt || "").toLocaleDateString()}`
                 : "No announcement today"}
-            </Text>
+            </AppText>
           </View>
 
           {/* Clock In Section */}
           <View className="mt-6">
-            <Text className="text-white text-lg font-semibold">• Clock In</Text>
+            <AppText className="text-white text-lg font-semibold">• Clock In</AppText>
 
             <View className="bg-white rounded-3xl p-2 mt-3 shadow-md flex-row justify-evenly items-center border-4 border-[#3F72AF]">
               <View>
-                <Text className="text-[#3F72AF] text-sm font-bold ">• Today</Text>
+                <AppText className="text-[#3F72AF] text-sm font-bold ">• Today</AppText>
                 <Text className="text-[#112D4E] text-3xl font-bold">{formatTime(todaySeconds)}</Text>
               </View>
               <View className="h-[100px] bg-[#3F72AF]  w-[0.5px]"></View>
               <View>
-                <Text className="text-[#3F72AF] text-sm font-bold">• This week</Text>
+                <AppText className="text-[#3F72AF] text-sm font-bold">• This week</AppText>
                 <Text className="text-[#112D4E] text-3xl font-bold">{formatTime(weekSeconds)}</Text>
               </View>
             </View>
@@ -274,7 +276,7 @@ const WorkingHours = () => {
                 end={{ x: 1, y: 1 }}
                 className="w-[200px] py-2 rounded-full flex items-center justify-center border-2 border-white"
               >
-                <Text className="text-white text-lg font-bold">{isClockedIn ? 'Clocked Out' : 'Clock In'}</Text>
+                <AppText className="text-white text-lg font-bold tracking-wider">{isClockedIn ? 'Clocked Out' : 'Clock In'}</AppText>
               </LinearGradient>
             </TouchableOpacity>
           </View>

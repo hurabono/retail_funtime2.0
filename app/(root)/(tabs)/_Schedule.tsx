@@ -5,6 +5,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import axios from 'axios';
 import { useAuth } from '../../../context/AuthContext';
 import { Link } from 'expo-router';
+import { AppText } from "../../../components/AppText";
+
 
 const API_URL = 'http://localhost:4000/api/auth';
 
@@ -72,21 +74,21 @@ const ScheduleScreen = () => {
 
           <View className="flex-row justify-between border-b border-white pb-3">
             <Link href="/_Schedule">
-              <Text className="text-white text-lg font-bold underline">My Schedule</Text>
+              <AppText className="text-white text-lg font-bold underline">My Schedule</AppText>
             </Link>
             <Link href="/_MyRequest">
-              <Text className="text-white text-lg font-bold">My Request</Text>
+              <AppText className="text-white text-lg font-bold">My Request</AppText>
             </Link>
           </View>
 
           {/* Week Selector */}
           <View className="mt-4 flex-row items-center">
             <View className="bg-white px-3 py-1 rounded-lg">
-              <Text className="text-[#3F72AF] font-bold text-sm">This Week</Text>
+              <AppText className="text-[#3F72AF] font-bold text-sm">This Week</AppText>
             </View>
             <View className="flex-row ml-4">
               {weekDates.map((d, idx) => (
-                <Text key={idx} className="text-white text-base mx-2">{formatDate(d)}</Text>
+                <AppText key={idx} className="text-white text-base mx-2">{formatDate(d)}</AppText>
               ))}
             </View>
           </View>
@@ -100,16 +102,16 @@ const ScheduleScreen = () => {
               <View key={index} className="bg-white rounded-xl px-5 py-3 mt-6 shadow-md border-4 border-[#3F72AF]">
                 {/* Date Badge */}
                 <View className="absolute -top-4 left-2 bg-white px-3 py-1 rounded-lg shadow-md">
-                  <Text className="text-[#3F72AF] font-bold text-sm text-center">{formatWeekday(dayDate)}</Text>
-                  <Text className="text-black font-bold text-lg text-center">{formatDate(dayDate)}</Text>
+                  <AppText className="text-[#3F72AF] font-bold text-sm text-center">{formatWeekday(dayDate)}</AppText>
+                  <AppText className="text-[#112D4E] font-bold text-lg text-center">{formatDate(dayDate)}</AppText>
                 </View>
 
                 {/* Schedule Content */}
-                <Text 
+                <AppText 
                   className={`font-bold text-lg mt-[35px] ${schedule ? 'text-[#3F72AF]' : 'text-gray-300'}`}
                 >
                   {schedule ? schedule.title || 'Scheduled Shift' : 'Not Scheduled'}
-                </Text>
+                </AppText>
                 {schedule && schedule.workHours && <Text className="text-[#3F72AF] font-bold absolute top-5 right-5">{schedule.workHours}h</Text>}
                 <Text className="text-gray-500 mt-1">
                   {schedule ? `${schedule.startTime} - ${schedule.endTime}` : 'No available Shift'}
@@ -119,7 +121,7 @@ const ScheduleScreen = () => {
                 {/* Shift Options */}
                 {schedule && schedule.workHours && (
                   <TouchableOpacity className="mt-3">
-                    <Text className="text-[#3F72AF] font-bold underline text-right">Shift options</Text>
+                    <AppText className="text-[#3F72AF] font-bold underline text-right">Shift options</AppText>
                   </TouchableOpacity>
                 )}
               </View>
