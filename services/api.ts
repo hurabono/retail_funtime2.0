@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const api = axios.create({
   // ✅ [수정] 보내주신 코드의 포트 번호 4000번을 유지하고,
   // routes/authRoutes.js를 사용하기 위해 baseURL 뒤에 '/auth' 경로를 추가했습니다.
-  baseURL: 'http://localhost:4000/api/auth', 
+  baseURL: 'https://retail-funtime-backend.onrender.com/api/auth', 
 });
 
 // ✅ [수정 없음] 보내주신 코드 그대로 AsyncStorage를 사용합니다.

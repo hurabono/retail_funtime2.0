@@ -10,7 +10,7 @@ import { AppText } from "../../../components/AppText";
 const API_URL =
   Platform.OS === "android"
     ? "http://10.0.2.2:4000/api/auth"
-    : "http://localhost:4000/api/auth";
+    : "https://retail-funtime-backend.onrender.com/api/auth";
 
 const ManagerInbox = () => {
   const [requests, setRequests] = useState<any[]>([]);

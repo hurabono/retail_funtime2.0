@@ -10,7 +10,7 @@ import { AppText } from "../../../components/AppText";
 
 
 
-const API_URL = 'http://localhost:4000/api/auth';
+const API_URL = 'https://retail-funtime-backend.onrender.com/api/auth';
 
 interface Announcement {
   _id: string;
@@ -76,7 +76,7 @@ const Index = () => {
     if (!token) return;
     try {
       setLoading(true);
-      const { data } = await axios.get('http://localhost:4000/api/auth/me', {
+      const { data } = await axios.get('https://retail-funtime-backend.onrender.com/api/auth/me', {
           headers: { Authorization: `Bearer ${token}` }
       });
       setUserInfo(data);

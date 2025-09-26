@@ -7,7 +7,7 @@ import axios from 'axios';
 const AuthContext = createContext();
 
 // [수정] YOUR_COMPUTER_IP를 실제 컴퓨터 IP 주소로 변경하세요.
-const API_URL = 'http://localhost:4000/api/auth';
+const API_URL = 'https://retail-funtime-backend.onrender.com/api/auth';
 
 const storage = {
   setItem: async (key, value) => {

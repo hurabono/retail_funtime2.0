@@ -8,7 +8,7 @@ import { Link } from 'expo-router';
 import { AppText } from "../../../components/AppText";
 
 
-const API_URL = 'http://localhost:4000/api/auth';
+const API_URL = 'https://retail-funtime-backend.onrender.com/api/auth';
 
 interface Schedule {
   date: string;

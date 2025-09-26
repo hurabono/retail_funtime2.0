@@ -8,7 +8,7 @@ import images from '@constants/images';
 import { AppText } from "../../../components/AppText";
 import { useFocusEffect } from "expo-router"; 
 
-const API_URL = 'http://localhost:4000/api/auth';
+const API_URL = 'https://retail-funtime-backend.onrender.com/api/auth';
 
 
 interface UserInfo {
@@ -66,7 +66,7 @@ const WorkingHours = () => {
     if (!token) return;
     try {
       setLoading(true);
-      const { data } = await axios.get('http://localhost:4000/api/auth/me', {
+      const { data } = await axios.get('https://retail-funtime-backend.onrender.com/api/auth/me', {
           headers: { Authorization: `Bearer ${token}` }
       });
       setUserInfo(data);

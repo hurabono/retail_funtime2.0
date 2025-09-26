@@ -5,7 +5,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AppText } from "../../../components/AppText";
 
-const API_URL = "http://localhost:4000/api/auth";
+const API_URL = "https://retail-funtime-backend.onrender.com/api/auth";
 
   interface TimeLog {
     clockIn?: string;

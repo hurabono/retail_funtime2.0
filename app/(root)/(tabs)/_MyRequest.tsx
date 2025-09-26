@@ -9,7 +9,7 @@ import { AppText } from "../../../components/AppText";
 
 
 // API 호출 base URL
-const API_URL = "http://localhost:4000/api/auth";
+const API_URL = "https://retail-funtime-backend.onrender.com/api/auth";
 
 const MyRequest = () => {
   const [filter, setFilter] = useState("Approved");

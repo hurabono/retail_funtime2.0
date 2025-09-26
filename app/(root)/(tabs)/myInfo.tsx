@@ -27,7 +27,7 @@ interface UserInfo {
   timeLogs?: { clockIn?: string; clockOut?: string }[];
 }
 
-const API_URL = 'http://localhost:4000/api/auth';
+const API_URL = 'https://retail-funtime-backend.onrender.com/api/auth';
 
 
 

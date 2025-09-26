@@ -6,7 +6,7 @@ import { useAuth } from "../../../context/AuthContext";
 import axios from "axios";
 import { AppText } from "../../../components/AppText";
 
-const API_URL = 'http://localhost:4000/api/auth';
+const API_URL = 'https://retail-funtime-backend.onrender.com/api/auth';
 
 interface Announcement {
   _id: string;

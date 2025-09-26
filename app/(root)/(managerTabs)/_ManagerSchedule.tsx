@@ -8,7 +8,7 @@ import { Picker } from '@react-native-picker/picker';
 import { AppText } from "../../../components/AppText";
 
 
-const API_URL = 'http://localhost:4000/api/auth';
+const API_URL = 'https://retail-funtime-backend.onrender.com/api/auth';
 
 interface Employee { _id: string; username: string; }
 interface Shift { startTime: string; endTime: string; position: string; workHours: number; break?: string; }

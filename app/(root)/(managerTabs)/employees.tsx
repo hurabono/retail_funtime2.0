@@ -9,7 +9,7 @@ import { AppText } from "../../../components/AppText";
 
 
 // API 기본 URL
-const API_URL = 'http://localhost:4000/api/auth';
+const API_URL = 'https://retail-funtime-backend.onrender.com/api/auth';
 
 // 직원 정보 타입
 interface Employee {
