@@ -141,7 +141,7 @@ const Employees = () => {
   return (
     <LinearGradient colors={['#112D4E', '#8199B6']} style={{ flex: 1 }}>
       <SafeAreaView className="mt-5" style={{ flex: 1 }}>
-        <View className="px-5">
+        <View className="px-5" style={{ flex: 1 }} >
           <AppText className="text-white text-2xl font-bold text-center my-6 tracking-wider">My Employees</AppText>
 
           {/* 🔹 Manager 고정 카드 */}
@@ -159,7 +159,7 @@ const Employees = () => {
           )}
 
           {/* 🔹 Employees 타이틀 */}
-          <AppText className="text-white text-xl font-bold mb-2 mt-4 tracking-wide">🔹 Employees</AppText>
+          <AppText className="text-white text-xl font-bold mt-2 mb-2 tracking-wide">🔹 Employees</AppText>
 
           {employees.length === 0 ? (
             <AppText className="text-white text-center text-lg mt-10">
@@ -167,6 +167,7 @@ const Employees = () => {
             </AppText>
           ) : (
             <FlatList 
+              style={{ flex: 1 }}
               data={employees}
               renderItem={renderItem}
               keyExtractor={item => item._id}

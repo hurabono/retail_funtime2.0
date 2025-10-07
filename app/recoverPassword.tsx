@@ -44,10 +44,10 @@ const recoverPassword = () => {
           </View>
 
           {/* Terms and condition Checkbox */}
-          <View className="w-[80%] flex-row items-center mt-4">
+          <View className="mx-0 flex-row items-center mt-4">
                       <Checkbox status={checked ? 'checked' : 'unchecked'} onPress={() => setChecked(!checked)} color="white" />
                       <Text className="text-gray-300 text-xs mr-2">I agree with privacy policy </Text>
-                      <Link href="/" className="text-blue-400 underline text-xs">Terms and Condition</Link>
+                      <Link href="/" className="text-white underline text-xs">Terms and Condition</Link>
         </View>
 
           {/* Revoer Button */}
@@ -61,7 +61,7 @@ const recoverPassword = () => {
           <View className="flex-row justify-center mt-6">
             <Text className="text-gray-300">You already have an account? </Text>
             <TouchableOpacity>
-              <Link href="./signIn" className="text-blue-300 underline">Log in</Link>
+              <Link href="./signIn" className="text-white underline">Log in</Link>
             </TouchableOpacity>
           </View>
 

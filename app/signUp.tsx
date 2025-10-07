@@ -220,7 +220,7 @@ const SignUp = () => {
           <View className="flex-row justify-center mt-6">
             <Text className="text-gray-300">Already have an account? </Text>
             <TouchableOpacity>
-              <Link href="./signIn" className="text-blue-400 underline">Log in</Link>
+              <Link href="./signIn" className="text-white underline">Log in</Link>
             </TouchableOpacity>
           </View>
         </ScrollView>

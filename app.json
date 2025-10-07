@@ -15,7 +15,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/management.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.stephfee.retail_fun_time"
     },
     "web": {
       "bundler": "metro",
@@ -48,6 +49,14 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "9ebb7b06-bee3-4da7-86e7-f36d3f4a0979"
+      }
     }
   }
 }

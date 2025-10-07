@@ -70,7 +70,7 @@ const SignIn = () => {
             />
           </View>
 
-          <View className="w-full flex-row justify-around items-center mt-4">
+          <View className="w-[400px] flex-row justify-around items-center mt-4">
             <TouchableOpacity>
               <Link href="./recoverPassword" className="text-gray-300 underline">Forget password?</Link>
             </TouchableOpacity>
@@ -101,7 +101,7 @@ const SignIn = () => {
           <View className="flex-row justify-center mt-6">
             <Text className="text-gray-300">Don’t have an account? </Text>
             <TouchableOpacity>
-              <Link href="./signUp" className="text-blue-400 underline">Register now</Link>
+              <Link href="./signUp" className="text-white underline">Register now</Link>
             </TouchableOpacity>
           </View>
         </ScrollView>
