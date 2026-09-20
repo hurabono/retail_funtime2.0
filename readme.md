@@ -1,50 +1,85 @@
-# Welcome to your Expo app 👋
+# Retail Fun Time
+![Thumnail](https://ik.imagekit.io/stephanie/git-thum/retailruntime.png?updatedAt=1786471909814)
+A workforce app for retail teams: clock in and out, schedules, leave requests, payroll, and announcements, with managers and employees seeing different apps behind the same login.
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Retail staff and their managers lose time to the same small questions every week. How many hours did I work. Was my leave approved. Is my pay right. When am I on next. Those answers usually live in a paper binder, a group chat, and a manager's memory. Retail Fun Time puts them in one place, in real time.
 
-## Get started
+Built as a seven month capstone project with a team.
 
-1. Install dependencies
+**Manager view**
 
-   ```bash
-   npm install
-   ```
+<img width="300" height="583" alt="retail-manager" src="https://github.com/user-attachments/assets/0d48d051-1aa5-45d2-acea-3697f49ed56b" />
 
-2. Start the app
 
-   ```bash
-    npx expo start
-   ```
+*Post an announcement, edit an employee record, build a schedule, add shifts, review payroll.*
 
-In the output, you'll find options to open the app in a
+**Employee view**
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+<img width="300" height="583" alt="retail-employee" src="https://github.com/user-attachments/assets/b656be18-2b83-436c-a965-4c71cfef7ad8" />
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
-## Get a fresh project
+*Home, request time off, check the schedule, read the paycheck breakdown, clock in.*
 
-When you're ready, run:
+## Two apps, one codebase
 
-```bash
-npm run reset-project
+The core design decision: a manager and an employee open the same app and get different software.
+
+**Employees**
+- Clock in and out, and see their own working hours
+- Request leave, holidays, and sick days, and track request status
+- View their schedule, payroll, and pay history
+- Receive announcements in real time
+
+**Managers**
+- View and edit employee records, set hourly wages
+- Build and publish schedules
+- Approve or reject leave and sick day requests
+- Review time logs across the team
+- Run payroll and post announcements
+
+This is enforced in the routing itself. `app/(root)/(tabs)` and `app/(root)/(managerTabs)` are separate route groups, resolved from the authenticated user's role, so an employee has no navigable path into manager screens rather than merely having the buttons hidden.
+
+## Architecture
+
+```
+Expo / React Native client  ──►  Node.js REST API (Render)
+        │                                 │
+  Role-based routing                  JWT auth
+  (tabs) / (managerTabs)              Employee, schedule, payroll data
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Authentication is JWT based. The token is stored with AsyncStorage and attached by an Axios request interceptor in [`services/api.ts`](./services/api.ts). Sensitive values use `expo-secure-store`.
 
-## Learn more
+Payroll required getting time interval arithmetic right across shift boundaries, which turned out to be the least glamorous and most rewritten part of the project.
 
-To learn more about developing your project with Expo, look at the following resources:
+## Built with
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+| | |
+|---|---|
+| Client | React Native, Expo, Expo Router, TypeScript |
+| Styling | NativeWind (Tailwind CSS for React Native), React Native Paper |
+| State and storage | React Context, AsyncStorage, `expo-secure-store` |
+| HTTP | Axios with a JWT request interceptor |
+| Backend | Node.js REST API, deployed on Render |
+| Native build | Android project included under `android/` |
 
-## Join the community
+## Run it locally
 
-Join our community of developers creating universal apps.
+```bash
+npm install
+npx expo start
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Open in Expo Go, an Android emulator, or an iOS simulator. The client points at the deployed backend, so no local API is needed to try it.
+
+## Known limitation
+
+Registration currently lets anyone sign up as a manager. There is no verification step, so the role boundary the app enforces everywhere else can be bypassed at the front door.
+
+The fix belongs at registration rather than in the routing: pre-approved manager codes or invitation-only signup, with an admin approval queue behind it. Role-scoped access tokens and an audit log of manager actions would make the boundary provable after the fact rather than only enforced at render time.
+
+Documenting this rather than quietly leaving it was deliberate. It is the clearest thing I learned on the project: access control that lives only in the UI is not access control.
+
+---
+
+Built by Stephanie (Heesu) Cho with a capstone team. September 2024 to April 2025.
